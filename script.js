@@ -366,7 +366,7 @@ const svgManager = {
         const currentData = drawManager.getColorData();
         const svg = this.getSVGPreview(currentData);
 
-        const blob = new Blob([this.svg.outerHTML], { type: 'image/svg+xml;charset=utf-8' });
+        const blob = new Blob([svg.outerHTML], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
