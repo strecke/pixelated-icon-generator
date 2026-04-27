@@ -278,12 +278,19 @@ input[type="color"]::-moz-color-swatch {
     font-family: 'Courier New', Courier, monospace;
 }
 
-.svg-container button {
+.svg-container button.copy-svg {
     background: white;
     position: absolute;
     bottom: 35px;
     right: 20px;
     margin: 0 3px 3px 0;
+}
+
+.svg-container button.generate-svg {
+    width: auto;
+    padding: 0 10px;
+    margin: 10px auto;
+    font-weight: 600;
 }
 
 .svg-container .svg-links-container {

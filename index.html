@@ -76,11 +76,13 @@
     </div>
 
     <div class="svg-container">
-        <fieldset>
+        <button class="generate-svg">Generate SVG Code</button>
+
+        <fieldset class="svg-code-wrapper close">
             <legend>Show SVG Output</legend>
-            <code class="svg-output">Some SVG here</code>
+            <code class="svg-output"></code>
+            <button class="copy-svg"><span class="icon icon-copy"></span></button>
         </fieldset>
-        <button><span class="icon icon-copy"></span></button>
         <div class="svg-links-container">
             <a href="https://svgomg.net/" target="_blank" rel="noopener noreferrer">1. Compress your SVG</a>
             <a href="https://yoksel.github.io/url-encoder/" target="_blank" rel="noopener noreferrer">2. Use it in

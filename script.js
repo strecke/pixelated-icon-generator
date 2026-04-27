@@ -296,78 +296,37 @@ saveManager.init();
 
 const svgManager = {
     ui: {},
-    svg: null,
     svgns: 'http://www.w3.org/2000/svg',
 
     init: function () {
         this.cacheDOM();
         this.bindEvents();
-        this.initSVG(CONFIG.initGridSize);
     },
 
     cacheDOM: function () {
-        this.ui.svgOutput = document.querySelector('.svg-container .svg-output');
-        this.ui.btnCopy = document.querySelector('.svg-container button');
-        this.ui.btnCopyIcon = document.querySelector('.svg-container button span');
+        this.ui.svgContainer = document.querySelector('.svg-container');
+        this.ui.btnGenerate = this.ui.svgContainer.querySelector('.generate-svg');
+        this.ui.codeWrapper = this.ui.svgContainer.querySelector('.svg-code-wrapper');
+        this.ui.svgOutput = this.ui.svgContainer.querySelector('.svg-output');
+        this.ui.btnCopy = this.ui.svgContainer.querySelector('button.copy-svg');
+        this.ui.btnCopyIcon = this.ui.btnCopy.querySelector('span');
     },
 
     bindEvents: function () {
-        this.ui.btnCopy.addEventListener('click', e => {
-            this.copyLink();
-        });
+        this.ui.btnGenerate.addEventListener('click', () => this.showSVGCode());
+        this.ui.btnCopy.addEventListener('click', e => this.copyLink());
 
         document.addEventListener('downloadSVG', () => this.download());
 
-        document.addEventListener('clearCanvas', () => this.initSVG(gridSizeManager.getGridSize()));
+        const resetSVGView = () => {
+            this.ui.codeWrapper.classList.add('close');
+            this.ui.btnGenerate.classList.remove('close');
+        };
 
-        document.addEventListener('pixelChanged', e => this.updateRect(e.detail.row, e.detail.column, e.detail.color));
-
-        document.addEventListener('canvasRebuilt', e => this.rebuildFromData(e.detail));
-    },
-
-    initSVG: function (gridSize) {
-        this.svg = document.createElementNS(this.svgns, 'svg');
-        this.svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        this.svg.viewBox.baseVal.width = gridSize;
-        this.svg.viewBox.baseVal.height = gridSize;
-        this.displaySVG();
-    },
-
-    rebuildFromData: function (colorData) {
-        const gridSize = colorData.length;
-        this.initSVG(gridSize);
-
-        for (let row = 0; row < gridSize; row++) {
-            for (let column = 0; column < gridSize; column++) {
-                const color = colorData[row][column];
-                if (color !== 'none') this.updateRect(row, column, color);
-            }
-        }
-    },
-
-    displaySVGTimeout: null,
-
-    displaySVG: function () {
-        if (this.displaySVGTimeout) cancelAnimationFrame(this.displaySVGTimeout);
-        this.displaySVGTimeout = requestAnimationFrame(() => {
-            this.ui.svgOutput.textContent = this.svg.outerHTML;
-        });
-    },
-
-    updateRect: function (row, column, color = 'none') {
-        const oldRect = this.svg.querySelector(`rect[x="${column}"][y="${row}"]`);
-        if (oldRect) this.svg.removeChild(oldRect);
-
-        if (color !== 'none') {
-            const rect = document.createElementNS(this.svgns, 'rect');
-            rect.setAttribute('x', column);
-            rect.setAttribute('y', row);
-            rect.setAttribute('width', '1');
-            rect.setAttribute('height', '1');
-            rect.setAttribute('fill', color);
-            this.svg.appendChild(rect);
-        }
-        this.displaySVG();
+        document.addEventListener('pixelChanged', resetSVGView);
+        document.addEventListener('clearCanvas', resetSVGView);
+        document.addEventListener('canvasRebuilt', resetSVGView);
+        document.addEventListener('gridSizeChanged', resetSVGView);
     },
 
     getSVGPreview: function (colorData) {
@@ -376,15 +335,14 @@ const svgManager = {
         svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         svg.viewBox.baseVal.width = gridSize;
         svg.viewBox.baseVal.height = gridSize;
+
         for (let y = 0; y < gridSize; y++) {
             for (let x = 0; x < gridSize; x++) {
                 const color = colorData[y][x];
                 if (color !== 'none') {
-                    const row = y;
-                    const column = x;
                     const rect = document.createElementNS(this.svgns, 'rect');
-                    rect.setAttribute('x', column);
-                    rect.setAttribute('y', row);
+                    rect.setAttribute('x', x);
+                    rect.setAttribute('y', y);
                     rect.setAttribute('width', '1');
                     rect.setAttribute('height', '1');
                     rect.setAttribute('fill', color);
@@ -392,11 +350,22 @@ const svgManager = {
                 }
             }
         }
-
         return svg;
     },
 
+    showSVGCode: function () {
+        const currentData = drawManager.getColorData();
+        const svg = this.getSVGPreview(currentData);
+
+        this.ui.svgOutput.textContent = svg.outerHTML;
+        this.ui.codeWrapper.classList.remove('close');
+        this.ui.btnGenerate.classList.add('close');
+    },
+
     download: function () {
+        const currentData = drawManager.getColorData();
+        const svg = this.getSVGPreview(currentData);
+
         const blob = new Blob([this.svg.outerHTML], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
@@ -413,9 +382,8 @@ const svgManager = {
     copyLink: async function () {
         if (this.copyLinkTimeout) clearTimeout(this.copyLinkTimeout);
         try {
-            await navigator.clipboard.writeText(this.svg.outerHTML);
+            await navigator.clipboard.writeText(this.ui.svgOutput.textContent);
             this.ui.btnCopyIcon.classList.add('icon-success');
-
             this.copyLinkTimeout = setTimeout(() => this.ui.btnCopyIcon.classList.remove('icon-success'), 3000);
         } catch (error) {
             console.warn('Failed to copy: ', error);
