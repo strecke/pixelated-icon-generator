@@ -269,7 +269,7 @@ const saveManager = {
 
         preview.addEventListener('click', e => {
             this.toggleGallery();
-            drawManager.loadFromState(state.colorData);
+            document.dispatchEvent(new CustomEvent('loadState', { detail: state.colorData }));
         });
 
         const dateObject = new Date(state.id);
@@ -280,8 +280,10 @@ const saveManager = {
             this.deleteEntry(state.id);
             item.remove();
         });
+
         btnDelete.appendChild(iconDelete);
         item.append(preview, date, btnDelete);
+
         return item;
     },
 };
@@ -421,6 +423,10 @@ const drawManager = {
         svgManager.initSVG();
     },
 
+    getColorData: function () {
+        return this.colorData;
+    },
+
     loadFromState: function (newColorData) {
         const newSize = newColorData.length;
         if (gridSizeManager.getGridSize() !== newSize) {
@@ -487,6 +493,7 @@ const drawManager = {
         document.addEventListener('gridSizeChanged', () => this.initColorData());
         document.addEventListener('clearCanvas', () => this.initColorData());
         document.addEventListener('toggleGridLines', () => this.ui.gridContainer.classList.toggle('grid-active'));
+        document.addEventListener('loadState', e => this.loadFromState(e.detail));
     },
 
     drawLine: function (x0, y0, x1, y1) {
