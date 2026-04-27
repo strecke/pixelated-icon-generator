@@ -7,6 +7,16 @@ const CONFIG = {
     rapidSpeed: 50,
 };
 
+const utils = {
+    compressColor: function (color) {
+        if (!color || color === '') return '';
+        if (color.length === 7 && color[1] === color[2] && color[3] === color[4] && color[5] === color[6]) {
+            return '#' + color[1] + color[3] + color[5];
+        }
+        return color;
+    }
+};
+
 const gridSizeManager = {
     ui: {},
     gridSize: CONFIG.initGridSize,
@@ -134,7 +144,7 @@ const toolbarManager = {
     },
 
     getColor: function () {
-        return this.pickedColor;
+        return utils.compressColor(this.pickedColor);
     },
 
     bindEvents: function () {
@@ -226,11 +236,9 @@ const saveManager = {
 
     save: function () {
         const id = Date.now();
-        const currentColorData = drawManager.colorData;
-        const colorDataCopy = JSON.parse(JSON.stringify(currentColorData));
-        const newState = { id, colorData: colorDataCopy, };
+        const colorData = JSON.parse(JSON.stringify(drawManager.getColorData()));
+        const newState = { id, colorData, };
         this.colorStates.push(newState);
-
         localStorage.setItem('colorData', JSON.stringify(this.colorStates));
     },
 
@@ -343,7 +351,7 @@ const svgManager = {
             let x = 0;
             while (x < gridSize) {
                 const color = colorData[y][x];
-                if (color === 'none' || color === '') {
+                if (color === '') {
                     x++;
                     continue;
                 }
@@ -427,8 +435,8 @@ const drawManager = {
     },
 
     initColorData: function () {
-        this.colorData = Array.from({ length: gridSizeManager.gridSize }, () =>
-            Array.from({ length: gridSizeManager.getGridSize() }, () => 'none')
+        this.colorData = Array.from({ length: gridSizeManager.getGridSize() }, () =>
+            Array.from({ length: gridSizeManager.getGridSize() }, () => '')
         );
     },
 
@@ -451,7 +459,7 @@ const drawManager = {
                 const color = this.colorData[row][column];
                 const cell = this.ui.gridContainer.querySelector(`.grid-cell[data-row="${row}"][data-column="${column}"]`);
 
-                if (cell) cell.style.backgroundColor = color === 'none' ? '' : color;
+                if (cell) cell.style.backgroundColor = color;
             }
         }
 
@@ -560,7 +568,7 @@ const drawManager = {
                 const rowEl = this.ui.gridContainer.children[y];
                 if (rowEl) {
                     const cellEl = rowEl.children[x];
-                    if (cellEl) cellEl.style.backgroundColor = replacementColor === 'none' ? '' : replacementColor;
+                    if (cellEl) cellEl.style.backgroundColor = replacementColor;
                 }
                 for (let i = 0; i < directions.length; i++) {
                     stack.push([x + directions[i][0], y + directions[i][1]]);
@@ -579,13 +587,14 @@ const drawManager = {
         this.draw(target);
     },
 
-    updateColorData: function (target, color = 'none') {
+    updateColorData: function (target, color = '') {
         const row = parseInt(target.dataset.row, 10);
         const column = parseInt(target.dataset.column, 10);
 
-        this.colorData[row][column] = color;
+        const compressedColor = utils.compressColor(color);
+        this.colorData[row][column] = compressedColor;
 
-        document.dispatchEvent(new CustomEvent('pixelChanged', { detail: { row, column, color } }));
+        document.dispatchEvent(new CustomEvent('pixelChanged', { detail: { row, column, color: compressedColor } }));
     },
 };
 
