@@ -341,8 +341,13 @@ const svgManager = {
         }
     },
 
+    displaySVGTimeout: null,
+
     displaySVG: function () {
-        this.ui.svgOutput.textContent = this.svg.outerHTML;
+        if (this.displaySVGTimeout) cancelAnimationFrame(this.displaySVGTimeout);
+        this.displaySVGTimeout = requestAnimationFrame(() => {
+            this.ui.svgOutput.textContent = this.svg.outerHTML;
+        });
     },
 
     updateRect: function (row, column, color = 'none') {
