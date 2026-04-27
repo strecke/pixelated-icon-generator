@@ -47,7 +47,6 @@ const gridSizeManager = {
         this.ui.btnMinus.addEventListener('pointerup', () => stopHolding());
 
         document.addEventListener('lostpointercapture', () => stopHolding());
-        document.addEventListener('lostpointercapture', () => stopHolding());
 
         this.ui.btnPlus.addEventListener('pointercancel', () => stopHolding());
         this.ui.btnMinus.addEventListener('pointercancel', () => stopHolding());
