@@ -200,9 +200,7 @@ const saveManager = {
     },
 
     initLoad: function () {
-        const states = JSON.parse(localStorage.getItem('colorData'));
-        this.colorStates = states;
-        if (!this.colorStates) this.colorStates = [];
+        this.colorStates = JSON.parse(localStorage.getItem('colorData')) || [];
     },
 
     openGallery: function () {
@@ -508,8 +506,8 @@ const drawManager = {
 
                 const cell = this.ui.gridContainer.querySelector(`.grid-cell[data-column="${x}"][data-row="${y}"]`);
                 if (cell) {
-                    this.updateColorData(cell, replacementColor);
-                    this.draw(cell);
+                    cell.style.backgroundColor = replacementColor === 'none' ? '' : replacementColor;
+                    svgManager.updateRect(y, x, replacementColor);
                 }
                 for (let i = 0; i < directions.length; i++) {
                     stack.push([x + directions[i][0], y + directions[i][1]]);
