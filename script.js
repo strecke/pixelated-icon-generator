@@ -74,14 +74,16 @@ const gridSizeManager = {
             }
             this.ui.gridContainer.appendChild(row);
         }
-        const cell = this.ui.gridContainer.querySelector('.grid-cell');
-        const rect = cell.getBoundingClientRect();
-        this.updateTransparencyPattern(rect.width);
+        this.updateTransparencyPattern();
     },
 
-    updateTransparencyPattern: function (cellSize) {
+    updateTransparencyPattern: function () {
+        const rect = this.ui.gridContainer.getBoundingClientRect();
+        const cellSize = rect.width / this.gridSize;
+
         const patternSize = cellSize / CONFIG.transparencyPatternFactor;
         const patternPosition = cellSize / (CONFIG.transparencyPatternFactor * 2);
+
         this.ui.gridContainer.style.backgroundSize = `${patternSize}px ${patternSize}px`;
         this.ui.gridContainer.style.backgroundPosition = `0 0, 0 ${patternPosition}px, ${patternPosition}px -${patternPosition}px, -${patternPosition}px 0`;
     },
