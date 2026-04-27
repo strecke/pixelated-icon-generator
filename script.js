@@ -335,6 +335,7 @@ const svgManager = {
         svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         svg.viewBox.baseVal.width = gridSize;
         svg.viewBox.baseVal.height = gridSize;
+        svg.setAttribute('shape-rendering', 'crispEdges');
 
         for (let y = 0; y < gridSize; y++) {
             for (let x = 0; x < gridSize; x++) {
