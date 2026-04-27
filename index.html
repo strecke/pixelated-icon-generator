@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixelated Icon Generator</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iI2ZmMDAwMCIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0yMzUuMjksMjE2LjdDMjEyLjg2LDIwNS42OSwyMDAsMTgyLjEyLDIwMCwxNTJWMTM0LjY5YTE1Ljk0LDE1Ljk0LDAsMCwwLTEwLjA5LTE0Ljg3bC0yOC42NS0xMS40NkE4LDgsMCwwLDEsMTU2Ljc5LDk4bDIyLjMyLTU2LjY3QzE4NCwyOC43OSwxNzgsMTQuMjEsMTY1LjM0LDkuNTFhMjQsMjQsMCwwLDAtMzAuNywxMy43MUwxMTIuMjUsODAuMDhhOCw4LDAsMCwxLTEwLjQxLDQuNUw3My4xMSw3My4wOGExNS45MSwxNS45MSwwLDAsMC0xNy4zOCwzLjY2QzM0LjY4LDk4LjQsMjQsMTIzLjcxLDI0LDE1MmExMTEuNTMsMTExLjUzLDAsMCwwLDMxLjE1LDc3LjUzQTguMDYsOC4wNiwwLDAsMCw2MSwyMzJIMjMyYTgsOCwwLDAsMCw4LTcuNTFBOC4yMSw4LjIxLDAsMCwwLDIzNS4yOSwyMTYuN1pNMTE1LjExLDIxNmE4Ny41Miw4Ny41MiwwLDAsMS0yNC4yNi00MS43MSw4LjIxLDguMjEsMCwwLDAtOS4yNS02LjE4QTgsOCwwLDAsMCw3NS4yOCwxNzhhMTA1LjMzLDEwNS4zMywwLDAsMCwxOC4zNiwzOEg2NC40NEE5NS42Miw5NS42MiwwLDAsMSw0MCwxNTJhODUuOTIsODUuOTIsMCwwLDEsNy43My0zNi4zbDEzNy44LDU1LjEzYzMsMTguMDYsMTAuNTUsMzMuNSwyMS44OSw0NS4xOVoiPjwvcGF0aD48L3N2Zz4=">
+    <link rel="stylesheet" href="styles.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Pixelated Icon Generator</h1>
+        <p>Create your pixelated SVG for free.</p>
+    </div>
+    <div class="main-wrapper">
+        <div class="main-content">
+            <div class="toolbar">
+                <input type="color">
+                <button class="draw edit-group active" data-tool="draw" title="Draw">
+                    <span class="icon icon-pen"></span>
+                </button>
+                <button class="rainbow edit-group" data-tool="rainbow">
+                    <span class="icon icon-rainbow"></span>
+                </button>
+                <button class="fill edit-group" data-tool="fill">
+                    <span class="icon icon-fill"></span>
+                </button>
+                <button class="erase edit-group" data-tool="erase" title="Erase (right click)">
+                    <span class="icon icon-eraser"></span>
+                </button>
+                <div class="divider"></div>
+                <button class="clear">
+                    <span class="icon icon-delete"></span>
+                </button>
+                <button class="grid active">
+                    <span class="icon icon-grid"></span>
+                </button>
+                <button class="save">
+                    <span class="icon icon-save"></span>
+                </button>
+                <button class="gallery">
+                    <span class="icon icon-gallery"></span>
+                </button>
+                <button class="download">
+                    <span class="icon icon-download"></span>
+                </button>
+                <button class="welcome">
+                    <span class="icon icon-welcome"></span>
+                </button>
+            </div>
+
+            <div class="grid-container grid-active">
+            </div>
+            <div class="gallery-container close">
+                <div class="gallery-item">
+                    <div class="preview">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                            <path
+                                d="M6 3h1v1H6zM4 4h1v1H4zm0 1h1v1H4zm0 1h1v1H4zm1 0h1v1H5zm1-1h1v1H6zm1-1h1v1H7zM6 4h1v1H6zM5 4h1v1H5z" />
+                        </svg>
+                    </div>
+                    <span class="item-date">Saved at 27.04.2026</span>
+                    <button class="remove-item"><span class="icon icon-delete"></span></button>
+                </div>
+            </div>
+        </div>
+        <div class="grid-size-container">
+            <button class="grid-size-minus">–</button>
+            <span class="grid-size">16 x 16</span>
+            <button class="grid-size-plus">+</button>
+        </div>
+    </div>
+
+    <div class="svg-container">
+        <fieldset>
+            <legend>Show SVG Output</legend>
+            <code class="svg-output">Some SVG here</code>
+        </fieldset>
+        <button><span class="icon icon-copy"></span></button>
+        <div class="svg-links-container">
+            <a href="https://svgomg.net/" target="_blank" rel="noopener noreferrer">1. Compress your SVG</a>
+            <a href="https://yoksel.github.io/url-encoder/" target="_blank" rel="noopener noreferrer">2. Use it in
+                CSS</a>
+        </div>
+    </div>
+    <div class="footer">
+        <p class="tribute">Icons by <a href="https://phosphoricons.com/" target="_blank"
+                rel="noopener noreferrer">Phosphor</a></p>
+        <span><a href="https://github.com/strecke/pixelated-icon-generator" target="_blank"
+                rel="noopener noreferrer"><span class="icon icon-github"></span>Contribute on GitHub</a></span>
+    </div>
+</body>
+
+</html>
