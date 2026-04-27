@@ -298,7 +298,7 @@ const svgManager = {
     init: function () {
         this.cacheDOM();
         this.bindEvents();
-        this.initSVG();
+        this.initSVG(CONFIG.initGridSize);
     },
 
     cacheDOM: function () {
@@ -311,16 +311,34 @@ const svgManager = {
         this.ui.btnCopy.addEventListener('click', e => {
             this.copyLink();
         });
+
         document.addEventListener('downloadSVG', () => this.download());
+
+        document.addEventListener('clearCanvas', () => this.initSVG(gridSizeManager.getGridSize()));
+
+        document.addEventListener('pixelChanged', e => this.updateRect(e.detail.row, e.detail.column, e.detail.color));
+
+        document.addEventListener('canvasRebuilt', e => this.rebuildFromData(e.detail));
     },
 
-    initSVG: function () {
+    initSVG: function (gridSize) {
         this.svg = document.createElementNS(this.svgns, 'svg');
         this.svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        const gridSize = gridSizeManager.getGridSize();
         this.svg.viewBox.baseVal.width = gridSize;
         this.svg.viewBox.baseVal.height = gridSize;
         this.displaySVG();
+    },
+
+    rebuildFromData: function (colorData) {
+        const gridSize = colorData.length;
+        this.initSVG(gridSize);
+
+        for (let row = 0; row < gridSize; row++) {
+            for (let column = 0; column < gridSize; column++) {
+                const color = colorData[row][column];
+                if (color !== 'none') this.updateRect(row, column, color);
+            }
+        }
     },
 
     displaySVG: function () {
@@ -330,6 +348,7 @@ const svgManager = {
     updateRect: function (row, column, color = 'none') {
         const oldRect = this.svg.querySelector(`rect[x="${column}"][y="${row}"]`);
         if (oldRect) this.svg.removeChild(oldRect);
+
         if (color !== 'none') {
             const rect = document.createElementNS(this.svgns, 'rect');
             rect.setAttribute('x', column);
@@ -337,7 +356,6 @@ const svgManager = {
             rect.setAttribute('width', '1');
             rect.setAttribute('height', '1');
             rect.setAttribute('fill', color);
-
             this.svg.appendChild(rect);
         }
         this.displaySVG();
@@ -361,7 +379,6 @@ const svgManager = {
                     rect.setAttribute('width', '1');
                     rect.setAttribute('height', '1');
                     rect.setAttribute('fill', color);
-
                     svg.appendChild(rect);
                 }
             }
@@ -420,7 +437,6 @@ const drawManager = {
         this.colorData = Array.from({ length: gridSizeManager.gridSize }, () =>
             Array.from({ length: gridSizeManager.getGridSize() }, () => 'none')
         );
-        svgManager.initSVG();
     },
 
     getColorData: function () {
@@ -436,17 +452,17 @@ const drawManager = {
         }
 
         this.colorData = JSON.parse(JSON.stringify(newColorData));
-        svgManager.initSVG();
+
         for (let row = 0; row < newSize; row++) {
             for (let column = 0; column < newSize; column++) {
                 const color = this.colorData[row][column];
                 const cell = this.ui.gridContainer.querySelector(`.grid-cell[data-row="${row}"][data-column="${column}"]`);
 
                 if (cell) cell.style.backgroundColor = color === 'none' ? '' : color;
-                if (color === 'none') continue;
-                svgManager.updateRect(row, column, color);
             }
         }
+
+        document.dispatchEvent(new CustomEvent('canvasRebuilt', { detail: this.colorData }));
     },
 
     bindEvents: function () {
@@ -548,7 +564,7 @@ const drawManager = {
                 const cell = this.ui.gridContainer.querySelector(`.grid-cell[data-column="${x}"][data-row="${y}"]`);
                 if (cell) {
                     cell.style.backgroundColor = replacementColor === 'none' ? '' : replacementColor;
-                    svgManager.updateRect(y, x, replacementColor);
+                    document.dispatchEvent(new CustomEvent('pixelChanged', { detail: { row: y, column: x, color: replacementColor } }));
                 }
                 for (let i = 0; i < directions.length; i++) {
                     stack.push([x + directions[i][0], y + directions[i][1]]);
@@ -567,10 +583,12 @@ const drawManager = {
     },
 
     updateColorData: function (target, color = 'none') {
-        const row = target.dataset.row;
-        const column = target.dataset.column;
+        const row = parseInt(target.dataset.row, 10);
+        const column = parseInt(target.dataset.column, 10);
+
         this.colorData[row][column] = color;
-        svgManager.updateRect(row, column, color);
+
+        document.dispatchEvent(new CustomEvent('pixelChanged', { detail: { row, column, color } }));
     },
 };
 
