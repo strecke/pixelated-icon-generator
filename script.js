@@ -554,23 +554,27 @@ const drawManager = {
         const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
         const stack = [[startX, startY]];
 
+        const gridSize = gridSizeManager.getGridSize();
+
         while (stack.length > 0) {
             const [x, y] = stack.pop();
 
-            if (x < 0 || x >= gridSizeManager.gridSize || y < 0 || y >= gridSizeManager.gridSize) continue;
+            if (x < 0 || x >= gridSize || y < 0 || y >= gridSize) continue;
+
             if (this.colorData[y][x] === targetColor) {
                 this.colorData[y][x] = replacementColor;
 
-                const cell = this.ui.gridContainer.querySelector(`.grid-cell[data-column="${x}"][data-row="${y}"]`);
-                if (cell) {
-                    cell.style.backgroundColor = replacementColor === 'none' ? '' : replacementColor;
-                    document.dispatchEvent(new CustomEvent('pixelChanged', { detail: { row: y, column: x, color: replacementColor } }));
+                const rowEl = this.ui.gridContainer.children[y];
+                if (rowEl) {
+                    const cellEl = rowEl.children[x];
+                    if (cellEl) cellEl.style.backgroundColor = replacementColor === 'none' ? '' : replacementColor;
                 }
                 for (let i = 0; i < directions.length; i++) {
                     stack.push([x + directions[i][0], y + directions[i][1]]);
                 }
             }
         }
+        document.dispatchEvent(new CustomEvent('canvasRebuilt', { detail: this.colorData }));
     },
 
     rainbow: function (target) {
