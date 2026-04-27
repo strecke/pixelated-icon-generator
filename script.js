@@ -337,20 +337,35 @@ const svgManager = {
         svg.viewBox.baseVal.height = gridSize;
         svg.setAttribute('shape-rendering', 'crispEdges');
 
+        const pathsByColor = {};
+
         for (let y = 0; y < gridSize; y++) {
-            for (let x = 0; x < gridSize; x++) {
+            let x = 0;
+            while (x < gridSize) {
                 const color = colorData[y][x];
-                if (color !== 'none') {
-                    const rect = document.createElementNS(this.svgns, 'rect');
-                    rect.setAttribute('x', x);
-                    rect.setAttribute('y', y);
-                    rect.setAttribute('width', '1');
-                    rect.setAttribute('height', '1');
-                    rect.setAttribute('fill', color);
-                    svg.appendChild(rect);
+                if (color === 'none' || color === '') {
+                    x++;
+                    continue;
                 }
+                let startX = x;
+                while (x < gridSize && colorData[y][x] === color) {
+                    x++;
+                }
+                let width = x - startX;
+
+                if (!pathsByColor[color]) pathsByColor[color] = '';
+                pathsByColor[color] += `M${startX} ${y} h${width} v1 h-${width} Z `;
+
             }
         }
+
+        for (const [color, pathData] of Object.entries(pathsByColor)) {
+            const path = document.createElementNS(this.svgns, 'path');
+            path.setAttribute('fill', color);
+            path.setAttribute('d', pathData.trim());
+            svg.appendChild(path);
+        }
+
         return svg;
     },
 
