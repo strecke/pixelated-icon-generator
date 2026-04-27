@@ -203,6 +203,7 @@ toolbarManager.init();
 const saveManager = {
     ui: {},
     colorStates: null,
+
     init: function () {
         this.cacheDOM();
         this.initLoad();
@@ -227,8 +228,9 @@ const saveManager = {
 
     save: function () {
         const id = Date.now();
-        const colorData = drawManager.colorData;
-        const newState = { id, colorData, };
+        const currentColorData = drawManager.colorData;
+        const colorDataCopy = JSON.parse(JSON.stringify(currentColorData));
+        const newState = { id, colorData: colorDataCopy, };
         this.colorStates.push(newState);
 
         localStorage.setItem('colorData', JSON.stringify(this.colorStates));
