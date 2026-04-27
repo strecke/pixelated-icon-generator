@@ -1,6 +1,10 @@
 const CONFIG = {
     initGridSize: 16,
+    minGridSize: 2,
+    maxGridSize: 100,
     transparencyPatternFactor: 1.5,
+    holdDelay: 500,
+    rapidSpeed: 50,
 };
 
 const gridSizeManager = {
@@ -22,6 +26,10 @@ const gridSizeManager = {
         this.ui.gridSizeSpan = document.querySelector('.grid-size-container .grid-size');
     },
 
+    getGridSize: function () {
+        return this.gridSize;
+    },
+
     bindEvents: function () {
         let lastGridSize = this.gridSize;
 
@@ -30,14 +38,19 @@ const gridSizeManager = {
             this.updateGridSize(factor);
 
             this.holdTimer = setTimeout(() => {
-                this.rapidInterval = setInterval(() => this.updateGridSize(factor), 50);
-            }, 500);
+                this.rapidInterval = setInterval(() => this.updateGridSize(factor), CONFIG.rapidSpeed);
+            }, CONFIG.holdDelay);
         };
 
         const stopHolding = () => {
             clearTimeout(this.holdTimer);
             clearInterval(this.rapidInterval);
-            if (lastGridSize !== this.gridSize) this.createGrid();
+            if (lastGridSize !== this.gridSize) {
+                this.createGrid();
+
+                const event = new CustomEvent('gridSizeChanged', { detail: this.gridSize });
+                document.dispatchEvent(event);
+            }
         };
 
         this.ui.btnPlus.addEventListener('pointerdown', () => startHolding(1));
@@ -54,10 +67,9 @@ const gridSizeManager = {
     },
 
     updateGridSize: function (factor = 0) {
-        if (this.gridSize + factor < 2 || this.gridSize + factor > 100) return;
+        if (this.gridSize + factor < CONFIG.minGridSize || this.gridSize + factor > CONFIG.maxGridSize) return;
         this.gridSize += factor;
         this.ui.gridSizeSpan.textContent = `${this.gridSize} x ${this.gridSize}`;
-        drawManager.initColorData();
     },
 
     createGrid: function () {
@@ -287,8 +299,9 @@ const svgManager = {
     initSVG: function () {
         this.svg = document.createElementNS(this.svgns, 'svg');
         this.svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        this.svg.viewBox.baseVal.width = gridSizeManager.gridSize;
-        this.svg.viewBox.baseVal.height = gridSizeManager.gridSize;
+        const gridSize = gridSizeManager.getGridSize();
+        this.svg.viewBox.baseVal.width = gridSize;
+        this.svg.viewBox.baseVal.height = gridSize;
         this.displaySVG();
     },
 
@@ -387,14 +400,14 @@ const drawManager = {
 
     initColorData: function () {
         this.colorData = Array.from({ length: gridSizeManager.gridSize }, () =>
-            Array.from({ length: gridSizeManager.gridSize }, () => 'none')
+            Array.from({ length: gridSizeManager.getGridSize() }, () => 'none')
         );
         svgManager.initSVG();
     },
 
     loadFromState: function (newColorData) {
         const newSize = newColorData.length;
-        if (gridSizeManager.gridSize !== newSize) {
+        if (gridSizeManager.getGridSize() !== newSize) {
             gridSizeManager.gridSize = newSize;
             gridSizeManager.ui.gridSizeSpan.textContent = `${newSize} x ${newSize}`;
             gridSizeManager.createGrid();
@@ -454,6 +467,8 @@ const drawManager = {
                 this.lastTool = null;
             }
         });
+
+        document.addEventListener('gridSizeChanged', () => this.initColorData());
     },
 
     drawLine: function (x0, y0, x1, y1) {
