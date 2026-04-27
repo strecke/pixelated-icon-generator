@@ -63,7 +63,7 @@ const gridSizeManager = {
 
         this.ui.btnPlus.addEventListener('pointercancel', () => stopHolding());
         this.ui.btnMinus.addEventListener('pointercancel', () => stopHolding());
-
+        document.addEventListener('clearCanvas', () => this.createGrid());
     },
 
     updateGridSize: function (factor = 0) {
@@ -125,6 +125,14 @@ const toolbarManager = {
         this.ui.colorPicker = this.ui.toolbar.querySelector('input[type="color"]');
     },
 
+    getActiveTool: function () {
+        return this.activeEditTool;
+    },
+
+    getColor: function () {
+        return this.pickedColor;
+    },
+
     bindEvents: function () {
         this.ui.editTools.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -134,30 +142,35 @@ const toolbarManager = {
         });
 
         this.ui.btnClear.addEventListener('click', () => {
-            gridSizeManager.createGrid();
-            drawManager.initColorData();
-
+            document.dispatchEvent(new CustomEvent('clearCanvas'));
+            // gridSizeManager.createGrid();
+            // drawManager.initColorData();
         });
 
         this.ui.btnGrid.addEventListener('click', () => {
+
             this.ui.btnGrid.classList.toggle('active');
-            drawManager.ui.gridContainer.classList.toggle('grid-active');
+            document.dispatchEvent(new CustomEvent('toggleGridLines'));
+            // drawManager.ui.gridContainer.classList.toggle('grid-active');
         });
 
         this.ui.btnDownload.addEventListener('click', () => {
-            svgManager.download();
+            document.dispatchEvent(new CustomEvent('downloadSVG'));
+            // svgManager.download();
+        });
+
+        this.ui.btnSave.addEventListener('click', () => {
+            document.dispatchEvent(new CustomEvent('saveState'));
+            // saveManager.save();
+        });
+
+        this.ui.btnGallery.addEventListener('click', () => {
+            document.dispatchEvent(new CustomEvent('toggleGallery'));
+            // saveManager.openGallery();
         });
 
         this.ui.colorPicker.addEventListener('input', e => {
             this.onColorChange(e.target.value);
-        });
-
-        this.ui.btnSave.addEventListener('click', e => {
-            saveManager.save();
-        });
-
-        this.ui.btnGallery.addEventListener('click', e => {
-            saveManager.openGallery();
         });
 
         document.addEventListener('keyup', e => {
@@ -171,13 +184,12 @@ const toolbarManager = {
     },
 
     setActiveTool: function (toolName) {
-        const btn = this.ui.toolbar.querySelector(`button.edit-group[data-tool="${toolName}"]`)
+        const btn = this.ui.toolbar.querySelector(`button.edit-group[data-tool="${toolName}"]`);
         if (this.tools.includes(btn.dataset.tool) && btn) {
             this.ui.editTools.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             this.activeEditTool = btn.dataset.tool;
         }
-
     },
 
     onColorChange: function (color) {
@@ -194,6 +206,7 @@ const saveManager = {
     init: function () {
         this.cacheDOM();
         this.initLoad();
+        this.bindEvents();
     },
 
     cacheDOM: function () {
@@ -203,6 +216,15 @@ const saveManager = {
         this.ui.btnGallery = document.querySelector('button.gallery');
     },
 
+    initLoad: function () {
+        this.colorStates = JSON.parse(localStorage.getItem('colorData')) || [];
+    },
+
+    bindEvents: function () {
+        document.addEventListener('saveState', () => this.save());
+        document.addEventListener('toggleGallery', () => this.openGallery());
+    },
+
     save: function () {
         const id = Date.now();
         const colorData = drawManager.colorData;
@@ -210,10 +232,6 @@ const saveManager = {
         this.colorStates.push(newState);
 
         localStorage.setItem('colorData', JSON.stringify(this.colorStates));
-    },
-
-    initLoad: function () {
-        this.colorStates = JSON.parse(localStorage.getItem('colorData')) || [];
     },
 
     openGallery: function () {
@@ -294,6 +312,7 @@ const svgManager = {
         this.ui.btnCopy.addEventListener('click', e => {
             this.copyLink();
         });
+        document.addEventListener('downloadSVG', () => this.download());
     },
 
     initSVG: function () {
@@ -433,14 +452,14 @@ const drawManager = {
         this.ui.gridContainer.addEventListener('pointerdown', e => {
             if (!e.target.classList.contains('grid-cell')) return;
             if (e.button === 2) {
-                this.lastTool = toolbarManager.activeEditTool;
+                this.lastTool = toolbarManager.getActiveTool();
                 const newTool = this.lastTool === 'erase' ? 'draw' : 'erase';
                 toolbarManager.setActiveTool(newTool);
             }
             this.active = true;
             this.lastX = parseInt(e.target.dataset.column, 10);
             this.lastY = parseInt(e.target.dataset.row, 10);
-            this[toolbarManager.activeEditTool](e.target);
+            this[toolbarManager.getActiveTool()](e.target);
         });
 
         this.ui.gridContainer.addEventListener('pointermove', e => {
@@ -448,7 +467,7 @@ const drawManager = {
             const currentX = parseInt(e.target.dataset.column, 10);
             const currentY = parseInt(e.target.dataset.row, 10);
             if (this.lastX === currentX && this.lastY === currentY) return;
-            if (toolbarManager.activeEditTool === 'fill') {
+            if (toolbarManager.getActiveTool() === 'fill') {
                 this.fill(e.target);
             } else {
                 this.drawLine(this.lastX, this.lastY, currentX, currentY);
@@ -469,6 +488,8 @@ const drawManager = {
         });
 
         document.addEventListener('gridSizeChanged', () => this.initColorData());
+        document.addEventListener('clearCanvas', () => this.initColorData());
+        document.addEventListener('toggleGridLines', () => this.ui.gridContainer.classList.toggle('grid-active'));
     },
 
     drawLine: function (x0, y0, x1, y1) {
@@ -481,7 +502,7 @@ const drawManager = {
         while (true) {
             const cell = this.ui.gridContainer.querySelector(`.grid-cell[data-column="${x0}"][data-row="${y0}"]`);
             if (cell) {
-                this[toolbarManager.activeEditTool](cell);
+                this[toolbarManager.getActiveTool()](cell);
             }
 
             if (x0 === x1 && y0 === y1) break;
@@ -493,7 +514,7 @@ const drawManager = {
     },
 
     draw: function (target) {
-        const pickedColor = toolbarManager.pickedColor;
+        const pickedColor = toolbarManager.getColor();
         target.style.backgroundColor = pickedColor;
         this.updateColorData(target, pickedColor);
     },
@@ -507,7 +528,7 @@ const drawManager = {
         const startX = parseInt(target.dataset.column, 10);
         const startY = parseInt(target.dataset.row, 10);
         const targetColor = this.colorData[startY][startX];
-        const replacementColor = toolbarManager.pickedColor;
+        const replacementColor = toolbarManager.getColor();
         if (targetColor === replacementColor) return;
 
         const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
