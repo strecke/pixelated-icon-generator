@@ -519,12 +519,17 @@ const drawManager = {
         const sx = (x0 < x1) ? 1 : -1;
         const sy = (y0 < y1) ? 1 : -1;
         let err = dx - dy;
+        let isFirstPixel = true;
 
         while (true) {
-            const cell = this.ui.gridContainer.querySelector(`.grid-cell[data-column="${x0}"][data-row="${y0}"]`);
-            if (cell) {
-                this[toolbarManager.getActiveTool()](cell);
+            if (!isFirstPixel) {
+                const rowEl = this.ui.gridContainer.children[y0];
+                if (rowEl) {
+                    const cell = rowEl.children[x0];
+                    if (cell) this[toolbarManager.getActiveTool()](cell);
+                }
             }
+            isFirstPixel = false;
 
             if (x0 === x1 && y0 === y1) break;
 
