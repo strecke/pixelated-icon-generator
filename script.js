@@ -143,30 +143,24 @@ const toolbarManager = {
 
         this.ui.btnClear.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('clearCanvas'));
-            // gridSizeManager.createGrid();
-            // drawManager.initColorData();
         });
 
         this.ui.btnGrid.addEventListener('click', () => {
 
             this.ui.btnGrid.classList.toggle('active');
             document.dispatchEvent(new CustomEvent('toggleGridLines'));
-            // drawManager.ui.gridContainer.classList.toggle('grid-active');
         });
 
         this.ui.btnDownload.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('downloadSVG'));
-            // svgManager.download();
         });
 
         this.ui.btnSave.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('saveState'));
-            // saveManager.save();
         });
 
         this.ui.btnGallery.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('toggleGallery'));
-            // saveManager.openGallery();
         });
 
         this.ui.colorPicker.addEventListener('input', e => {
@@ -223,7 +217,7 @@ const saveManager = {
 
     bindEvents: function () {
         document.addEventListener('saveState', () => this.save());
-        document.addEventListener('toggleGallery', () => this.openGallery());
+        document.addEventListener('toggleGallery', () => this.toggleGallery());
     },
 
     save: function () {
@@ -236,11 +230,12 @@ const saveManager = {
         localStorage.setItem('colorData', JSON.stringify(this.colorStates));
     },
 
-    openGallery: function () {
+    toggleGallery: function () {
         this.ui.gridContainer.classList.toggle('close');
         this.ui.gridSizeContainer.classList.toggle('close');
         this.ui.gallery.classList.toggle('close');
         this.ui.btnGallery.classList.toggle('active');
+
         if (this.ui.gallery.classList.contains('close')) return;
 
         this.ui.gallery.replaceChildren();
@@ -273,7 +268,7 @@ const saveManager = {
         preview.appendChild(svg);
 
         preview.addEventListener('click', e => {
-            this.openGallery();
+            this.toggleGallery();
             drawManager.loadFromState(state.colorData);
         });
 
