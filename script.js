@@ -74,18 +74,22 @@ const gridSizeManager = {
 
     createGrid: function () {
         this.ui.gridContainer.replaceChildren();
+        const fragment = document.createDocumentFragment();
+
         for (let i = 0; i < this.gridSize; i++) {
             const row = document.createElement('div');
-            row.classList.add('grid-row');
+            row.className = 'grid-row';
+
             for (let j = 0; j < this.gridSize; j++) {
                 const cell = document.createElement('div');
-                cell.classList.add('grid-cell');
+                cell.className = 'grid-cell';
                 cell.dataset.row = i;
                 cell.dataset.column = j;
                 row.appendChild(cell);
             }
-            this.ui.gridContainer.appendChild(row);
+            fragment.appendChild(row);
         }
+        this.ui.gridContainer.appendChild(fragment);
         this.updateTransparencyPattern();
     },
 
