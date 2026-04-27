@@ -131,7 +131,7 @@ const toolbarManager = {
         });
 
         this.ui.btnDownload.addEventListener('click', () => {
-            svgManager.downlaod();
+            svgManager.download();
         });
 
         this.ui.colorPicker.addEventListener('input', e => {
@@ -337,7 +337,7 @@ const svgManager = {
         return svg;
     },
 
-    downlaod: function () {
+    download: function () {
         const blob = new Blob([this.svg.outerHTML], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
