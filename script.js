@@ -453,6 +453,7 @@ svgManager.init();
 const drawManager = {
     ui: {},
     active: false,
+    hasChanged: false,
     lastTool: null,
     lastX: null,
     lastY: null,
@@ -488,6 +489,7 @@ const drawManager = {
                 toolbarManager.setActiveTool(newTool);
             }
             this.active = true;
+            this.hasChanged = false;
             this.lastX = parseInt(e.target.dataset.column, 10);
             this.lastY = parseInt(e.target.dataset.row, 10);
             this[toolbarManager.getActiveTool()](e.target);
@@ -509,8 +511,9 @@ const drawManager = {
         });
 
         document.addEventListener('pointerup', e => {
-            if (this.active) document.dispatchEvent(new CustomEvent('saveHistory'));
+            if (this.active && this.hasChanged) document.dispatchEvent(new CustomEvent('saveHistory'));
             this.active = false;
+            this.hasChanged = false;
             this.lastX = null;
             this.lastY = null;
             if (this.lastTool) {
@@ -578,13 +581,13 @@ const drawManager = {
 
     draw: function (target) {
         const pickedColor = toolbarManager.getColor();
-        target.style.backgroundColor = pickedColor;
-        this.updateColorData(target, pickedColor);
+        if (this.updateColorData(target, pickedColor)) {
+            target.style.backgroundColor = pickedColor;
+        }
     },
 
     erase: function (target) {
-        target.style.backgroundColor = '';
-        this.updateColorData(target);
+        if (this.updateColorData(target)) target.style.backgroundColor = '';
     },
 
     fill: function (target) {
@@ -594,6 +597,7 @@ const drawManager = {
         const replacementColor = toolbarManager.getColor();
         if (targetColor === replacementColor) return;
 
+        this.hasChanged = true;
         const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
         const stack = [[startX, startY]];
 
@@ -632,11 +636,15 @@ const drawManager = {
     updateColorData: function (target, color = '') {
         const row = parseInt(target.dataset.row, 10);
         const column = parseInt(target.dataset.column, 10);
-
         const compressedColor = utils.compressColor(color);
-        this.colorData[row][column] = compressedColor;
 
-        document.dispatchEvent(new CustomEvent('pixelChanged', { detail: { row, column, color: compressedColor } }));
+        if (this.colorData[row][column] !== compressedColor) {
+            this.colorData[row][column] = compressedColor;
+            this.hasChanged = true;
+            document.dispatchEvent(new CustomEvent('pixelChanged', { detail: { row, column, color: compressedColor } }));
+            return true;
+        }
+        return false;
     },
 };
 
