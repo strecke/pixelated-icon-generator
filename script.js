@@ -7,16 +7,52 @@ const CONFIG = {
     rapidSpeed: 50,
     maxHistory: 50,
     showSuccessDuration: 2000,
+    shadeStep: 10,
 };
 
 const utils = {
     _timers: new WeakMap(),
-    compressColor: function (color) {
-        if (!color || color === '') return '';
-        if (color.length === 7 && color[1] === color[2] && color[3] === color[4] && color[5] === color[6]) {
-            return '#' + color[1] + color[3] + color[5];
+    compressColor: function (hex) {
+        if (!hex || hex === '') return '';
+        if (hex.length === 7 && hex[1] === hex[2] && hex[3] === hex[4] && hex[5] === hex[6]) {
+            return '#' + hex[1] + hex[3] + hex[5];
         }
-        return color;
+        return hex;
+    },
+    decompressColor: function (hex) {
+        if (!hex || hex === '') return '';
+        return hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, (m, r, g, b) => '#' + r + r + g + g + b + b);
+    },
+    hexToRGB: function (hex) {
+        const decompressedHex = this.decompressColor(hex).replace(/^#/, '');
+        if (decompressedHex.length !== 6) return { r: 0, g: 0, b: 0 };
+        return {
+            r: parseInt(decompressedHex.substring(0, 2), 16),
+            g: parseInt(decompressedHex.substring(2, 4), 16),
+            b: parseInt(decompressedHex.substring(4, 6), 16),
+        };
+    },
+    rgbToHex: function (r, g, b) {
+        return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+    },
+    adjustColor: function (hex, percent = CONFIG.shadeStep) {
+        const rgb = this.hexToRGB(hex);
+
+        const step = Math.round(255 * (percent / 100));
+        rgb.r = Math.max(0, Math.min(255, rgb.r + step));
+        rgb.g = Math.max(0, Math.min(255, rgb.g + step));
+        rgb.b = Math.max(0, Math.min(255, rgb.b + step));
+        // if (percent > 0) {
+        //     rgb.r = Math.round(rgb.r + (255 - rgb.r) * (percent / 100));
+        //     rgb.g = Math.round(rgb.g + (255 - rgb.g) * (percent / 100));
+        //     rgb.b = Math.round(rgb.b + (255 - rgb.b) * (percent / 100));
+        // } else {
+        //     rgb.r = Math.round(rgb.r * (1 + percent / 100));
+        //     rgb.g = Math.round(rgb.g * (1 + percent / 100));
+        //     rgb.b = Math.round(rgb.b * (1 + percent / 100));
+        // }
+        const newHex = this.rgbToHex(rgb.r, rgb.g, rgb.b);
+        return this.compressColor(newHex);
     },
     showSuccess: function (iconElement, duration = CONFIG.showSuccessDuration) {
         if (this._timers.has(iconElement)) clearTimeout(this._timers.get(iconElement));
@@ -133,7 +169,7 @@ gridSizeManager.init();
 
 const toolbarManager = {
     ui: {},
-    tools: ['draw', 'erase', 'fill', 'rainbow'],
+    tools: ['draw', 'erase', 'fill', 'rainbow', 'darken', 'brighten'],
     activeEditTool: 'draw',
     pickedColor: '#000000',
     holdTimer: null,
@@ -639,6 +675,30 @@ const drawManager = {
         }
     },
 
+    darken: function (target) {
+        const row = parseInt(target.dataset.row, 10);
+        const column = parseInt(target.dataset.column, 10);
+        const currentColor = this.colorData[row][column];
+
+        if (!currentColor || currentColor === '#000' || currentColor === '#000000') return;
+
+        const newColor = utils.adjustColor(currentColor, -CONFIG.shadeStep);
+
+        if (this.updateColorData(target, newColor)) target.style.backgroundColor = newColor;
+    },
+
+    brighten: function (target) {
+        const row = parseInt(target.dataset.row, 10);
+        const column = parseInt(target.dataset.column, 10);
+        const currentColor = this.colorData[row][column];
+
+        if (!currentColor || currentColor === '#fff' || currentColor === '#ffffff') return;
+
+        const newColor = utils.adjustColor(currentColor, CONFIG.shadeStep);
+
+        if (this.updateColorData(target, newColor)) target.style.backgroundColor = newColor;
+    },
+
     erase: function (target) {
         if (this.updateColorData(target)) target.style.backgroundColor = '';
     },
@@ -681,8 +741,7 @@ const drawManager = {
         const randomR = Math.floor(Math.random() * 256);
         const randomG = Math.floor(Math.random() * 256);
         const randomB = Math.floor(Math.random() * 256);
-        const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
-        toolbarManager.onColorChange(rgbToHex(randomR, randomG, randomB));
+        toolbarManager.onColorChange(utils.rgbToHex(randomR, randomG, randomB));
         this.draw(target);
     },
 
