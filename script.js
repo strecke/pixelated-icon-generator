@@ -65,15 +65,17 @@ const gridSizeManager = {
         };
 
         this.ui.btnPlus.addEventListener('pointerdown', () => startHolding(1));
-        this.ui.btnMinus.addEventListener('pointerdown', () => startHolding(-1));
+        this.ui.btnPlus.addEventListener('pointerup', stopHolding);
+        this.ui.btnPlus.addEventListener('pointerleave', stopHolding);
+        this.ui.btnPlus.addEventListener('pointercancel', stopHolding);
 
-        this.ui.btnPlus.addEventListener('pointerup', () => stopHolding());
-        this.ui.btnMinus.addEventListener('pointerup', () => stopHolding());
+        this.ui.btnMinus.addEventListener('pointerdown', () => startHolding(-1));
+        this.ui.btnMinus.addEventListener('pointerup', stopHolding);
+        this.ui.btnMinus.addEventListener('pointerleave', stopHolding);
+        this.ui.btnMinus.addEventListener('pointercancel', stopHolding);
 
         document.addEventListener('lostpointercapture', () => stopHolding());
 
-        this.ui.btnPlus.addEventListener('pointercancel', () => stopHolding());
-        this.ui.btnMinus.addEventListener('pointercancel', () => stopHolding());
         document.addEventListener('clearCanvas', () => this.createGrid());
     },
 
