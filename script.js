@@ -6,16 +6,27 @@ const CONFIG = {
     holdDelay: 500,
     rapidSpeed: 50,
     maxHistory: 50,
+    showSuccessDuration: 2000,
 };
 
 const utils = {
+    _timers: new WeakMap(),
     compressColor: function (color) {
         if (!color || color === '') return '';
         if (color.length === 7 && color[1] === color[2] && color[3] === color[4] && color[5] === color[6]) {
             return '#' + color[1] + color[3] + color[5];
         }
         return color;
-    }
+    },
+    showSuccess: function (iconElement, duration = CONFIG.showSuccessDuration) {
+        if (this._timers.has(iconElement)) clearTimeout(this._timers.get(iconElement));
+        iconElement.classList.add('icon-success');
+        const timerId = setTimeout(() => {
+            iconElement.classList.remove('icon-success');
+            this._timers.delete(iconElement);
+        }, duration);
+        this._timers.set(iconElement, timerId);
+    },
 };
 
 const gridSizeManager = {
@@ -174,10 +185,12 @@ const toolbarManager = {
 
         this.ui.btnDownload.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('downloadSVG'));
+            utils.showSuccess(this.ui.btnDownload.querySelector('.icon'));
         });
 
         this.ui.btnSave.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('saveState'));
+            utils.showSuccess(this.ui.btnSave.querySelector('.icon'));
         });
 
         this.ui.btnGallery.addEventListener('click', () => {
@@ -469,8 +482,7 @@ const svgManager = {
         if (this.copyLinkTimeout) clearTimeout(this.copyLinkTimeout);
         try {
             await navigator.clipboard.writeText(this.ui.svgOutput.textContent);
-            this.ui.btnCopyIcon.classList.add('icon-success');
-            this.copyLinkTimeout = setTimeout(() => this.ui.btnCopyIcon.classList.remove('icon-success'), 3000);
+            utils.showSuccess(this.ui.btnCopyIcon);
         } catch (error) {
             console.warn('Failed to copy: ', error);
         }
