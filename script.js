@@ -291,9 +291,21 @@ const saveManager = {
 
     save: function () {
         const id = Date.now();
-        const colorData = JSON.parse(JSON.stringify(drawManager.getColorData()));
-        const newState = { id, colorData, };
-        this.colorStates.push(newState);
+        const currentColorData = drawManager.getColorData();
+        const colorDataString = JSON.stringify(currentColorData);
+        const existingIndex = this.colorStates.findIndex(state =>
+            JSON.stringify(state.colorData) === colorDataString
+        );
+
+        if (existingIndex !== -1) {
+            this.colorStates[existingIndex].id = id;
+            const updatedState = this.colorStates.splice(existingIndex, 1)[0];
+            this.colorStates.push(updatedState);
+        } else {
+            const colorDataCopy = JSON.parse(colorDataString);
+            this.colorStates.push({ id, colorData: colorDataCopy, });
+        }
+
         localStorage.setItem('colorData', JSON.stringify(this.colorStates));
     },
 
