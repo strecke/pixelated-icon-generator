@@ -5,6 +5,7 @@ const CONFIG = {
     transparencyPatternFactor: 1.5,
     holdDelay: 500,
     rapidSpeed: 50,
+    maxHistory: 50,
 };
 
 const utils = {
@@ -136,6 +137,8 @@ const toolbarManager = {
         this.ui.btnDownload = this.ui.toolbar.querySelector('button.download');
         this.ui.btnSave = this.ui.toolbar.querySelector('button.save');
         this.ui.btnGallery = this.ui.toolbar.querySelector('button.gallery');
+        this.ui.btnUndo = this.ui.toolbar.querySelector('button.undo');
+        this.ui.btnRedo = this.ui.toolbar.querySelector('button.redo');
         this.ui.colorPicker = this.ui.toolbar.querySelector('input[type="color"]');
     },
 
@@ -177,17 +180,27 @@ const toolbarManager = {
             document.dispatchEvent(new CustomEvent('toggleGallery'));
         });
 
+        this.ui.btnUndo.addEventListener('click', () => {
+            document.dispatchEvent(new CustomEvent('undoAction'));
+        });
+
+        this.ui.btnRedo.addEventListener('click', () => {
+            document.dispatchEvent(new CustomEvent('redoAction'));
+        });
+
         this.ui.colorPicker.addEventListener('input', e => {
             this.onColorChange(e.target.value);
         });
 
-        document.addEventListener('keyup', e => {
+        document.addEventListener('keydown', e => {
             if (e.key === 'd') this.setActiveTool('draw');
             else if (e.key === 'r') this.setActiveTool('rainbow');
             else if (e.key === 'f') this.setActiveTool('fill');
             else if (e.key === 'e') this.setActiveTool('erase');
             else if (e.key === 'c') this.ui.btnClear.click();
             else if (e.key === 'g') this.ui.btnGrid.click();
+            else if (e.ctrlKey && e.key === 'z') document.dispatchEvent(new CustomEvent('undoAction'));
+            else if (e.ctrlKey && (e.key === 'y' || (e.shiftKey && e.key === 'Z'))) document.dispatchEvent(new CustomEvent('redoAction'));
         });
     },
 
@@ -464,28 +477,6 @@ const drawManager = {
         return this.colorData;
     },
 
-    loadFromState: function (newColorData) {
-        const newSize = newColorData.length;
-        if (gridSizeManager.getGridSize() !== newSize) {
-            gridSizeManager.gridSize = newSize;
-            gridSizeManager.ui.gridSizeSpan.textContent = `${newSize} x ${newSize}`;
-            gridSizeManager.createGrid();
-        }
-
-        this.colorData = JSON.parse(JSON.stringify(newColorData));
-
-        for (let row = 0; row < newSize; row++) {
-            for (let column = 0; column < newSize; column++) {
-                const color = this.colorData[row][column];
-                const cell = this.ui.gridContainer.querySelector(`.grid-cell[data-row="${row}"][data-column="${column}"]`);
-
-                if (cell) cell.style.backgroundColor = color;
-            }
-        }
-
-        document.dispatchEvent(new CustomEvent('canvasRebuilt', { detail: this.colorData }));
-    },
-
     bindEvents: function () {
         this.ui.gridContainer.addEventListener('contextmenu', e => e.preventDefault());
 
@@ -518,6 +509,7 @@ const drawManager = {
         });
 
         document.addEventListener('pointerup', e => {
+            if (this.active) document.dispatchEvent(new CustomEvent('saveHistory'));
             this.active = false;
             this.lastX = null;
             this.lastY = null;
@@ -530,7 +522,32 @@ const drawManager = {
         document.addEventListener('gridSizeChanged', () => this.initColorData());
         document.addEventListener('clearCanvas', () => this.initColorData());
         document.addEventListener('toggleGridLines', () => this.ui.gridContainer.classList.toggle('grid-active'));
-        document.addEventListener('loadState', e => this.loadFromState(e.detail));
+        document.addEventListener('loadState', e => this.loadFromData(e.detail));
+        document.addEventListener('restoreHistoryState', e => this.loadFromData(e.detail));
+    },
+
+    loadFromData: function (newColorData) {
+        const newSize = newColorData.length;
+
+        if (gridSizeManager.getGridSize() !== newSize) {
+            gridSizeManager.gridSize = newSize;
+            gridSizeManager.ui.gridSizeSpan.textContent = `${newSize} x ${newSize}`;
+            gridSizeManager.createGrid();
+        }
+
+        this.colorData = JSON.parse(JSON.stringify(newColorData));
+
+        for (let row = 0; row < newSize; row++) {
+            for (let column = 0; column < newSize; column++) {
+                const color = this.colorData[row][column];
+                const rowEl = this.ui.gridContainer.children[row];
+                if (rowEl) {
+                    const cell = rowEl.children[column];
+                    if (cell) cell.style.backgroundColor = color;
+                }
+            }
+        }
+        document.dispatchEvent(new CustomEvent('canvasRebuilt', { detail: this.colorData }));
     },
 
     drawLine: function (x0, y0, x1, y1) {
@@ -624,3 +641,64 @@ const drawManager = {
 };
 
 drawManager.init();
+
+const historyManager = {
+    undoStack: [],
+    redoStack: [],
+
+    init: function () {
+        this.bindEvents();
+        this.saveState();
+    },
+
+    bindEvents: function () {
+        document.addEventListener('undoAction', () => this.undo());
+        document.addEventListener('redoAction', () => this.redo());
+        document.addEventListener('saveHistory', () => this.saveState());
+
+        document.addEventListener('clearCanvas', () => {
+            setTimeout(() => this.saveState(), 10);
+        });
+
+        document.addEventListener('gridSizeChanged', () => {
+            setTimeout(() => this.saveState(), 10);
+        });
+
+        document.addEventListener('loadState', () => this.resetHistory());
+    },
+
+    saveState: function () {
+        const currentState = JSON.parse(JSON.stringify(drawManager.getColorData()));
+        this.undoStack.push(currentState);
+        if (this.undoStack.length > CONFIG.maxHistory) {
+            this.undoStack.shift();
+        }
+        this.redoStack = [];
+    },
+
+    undo: function () {
+        if (this.undoStack.length <= 1) return;
+
+        const currentState = this.undoStack.pop();
+        this.redoStack.push(currentState);
+
+        const previousState = this.undoStack[this.undoStack.length - 1];
+        document.dispatchEvent(new CustomEvent('restoreHistoryState', { detail: previousState }));
+    },
+
+    redo: function () {
+        if (this.redoStack.length === 0) return;
+
+        const nextState = this.redoStack.pop();
+        this.undoStack.push(nextState);
+        document.dispatchEvent(new CustomEvent('restoreHistoryState', { detail: nextState }));
+    },
+
+    resetHistory: function () {
+        this.undoStack = [];
+        this.redoStack = [];
+        this.saveState();
+    },
+};
+
+historyManager.init();
