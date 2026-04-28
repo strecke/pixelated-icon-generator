@@ -345,29 +345,49 @@ const svgManager = {
         svg.viewBox.baseVal.height = gridSize;
         svg.setAttribute('shape-rendering', 'crispEdges');
 
-        const pathsByColor = {};
+        const rectsByColor = {};
 
         for (let y = 0; y < gridSize; y++) {
             let x = 0;
             while (x < gridSize) {
                 const color = colorData[y][x];
+
                 if (color === '') {
                     x++;
                     continue;
                 }
+
                 let startX = x;
                 while (x < gridSize && colorData[y][x] === color) {
                     x++;
                 }
                 let width = x - startX;
 
-                if (!pathsByColor[color]) pathsByColor[color] = '';
-                pathsByColor[color] += `M${startX} ${y} h${width} v1 h-${width} Z `;
+                if (!rectsByColor[color]) rectsByColor[color] = [];
+                const colorRects = rectsByColor[color];
+
+                let merged = false;
+
+                for (let i = colorRects.length - 1; i >= 0; i--) {
+                    const r = colorRects[i];
+                    if (r.x === startX && r.w === width && r.y + r.h === y) {
+                        r.h += 1;
+                        colorRects.push(colorRects.splice(i, 1)[0]);
+                        merged = true;
+                        break;
+                    }
+                }
+                if (!merged) colorRects.push({ x: startX, y: y, w: width, h: 1 });
 
             }
         }
 
-        for (const [color, pathData] of Object.entries(pathsByColor)) {
+        for (const [color, rects] of Object.entries(rectsByColor)) {
+            let pathData = '';
+            for (const r of rects) {
+                pathData += `M${r.x} ${r.y} h${r.w} v${r.h} h-${r.w} Z `;
+            }
+
             const path = document.createElementNS(this.svgns, 'path');
             path.setAttribute('fill', color);
             path.setAttribute('d', pathData.trim());
