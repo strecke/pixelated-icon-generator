@@ -123,6 +123,8 @@ const toolbarManager = {
     tools: ['draw', 'erase', 'fill', 'rainbow'],
     activeEditTool: 'draw',
     pickedColor: '#000000',
+    holdTimer: null,
+    rapidInterval: null,
 
     init: function () {
         this.cacheDOM();
@@ -179,6 +181,31 @@ const toolbarManager = {
         this.ui.btnGallery.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('toggleGallery'));
         });
+
+        const startHolding = e => {
+            document.dispatchEvent(new CustomEvent(e));
+
+            this.holdTimer = setTimeout(() => {
+                this.rapidInterval = setInterval(() => {
+                    document.dispatchEvent(new CustomEvent(e));
+                }, CONFIG.rapidSpeed);
+            }, CONFIG.holdDelay);
+        };
+
+        const stopHolding = () => {
+            clearTimeout(this.holdTimer);
+            clearInterval(this.rapidInterval);
+        };
+
+        this.ui.btnUndo.addEventListener('pointerdown', () => startHolding('undoAction'));
+        this.ui.btnUndo.addEventListener('pointerup', stopHolding);
+        this.ui.btnUndo.addEventListener('pointerleave', stopHolding);
+        this.ui.btnUndo.addEventListener('pointercancel', stopHolding);
+
+        this.ui.btnRedo.addEventListener('pointerdown', () => startHolding('redoAction'));
+        this.ui.btnRedo.addEventListener('pointerup', stopHolding);
+        this.ui.btnRedo.addEventListener('pointerleave', stopHolding);
+        this.ui.btnRedo.addEventListener('pointercancel', stopHolding);
 
         this.ui.btnUndo.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('undoAction'));
