@@ -190,7 +190,6 @@ const toolbarManager = {
 
         this.ui.btnSave.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('saveState'));
-            utils.showSuccess(this.ui.btnSave.querySelector('.icon'));
         });
 
         this.ui.btnGallery.addEventListener('click', () => {
@@ -307,6 +306,7 @@ const saveManager = {
         }
 
         localStorage.setItem('colorData', JSON.stringify(this.colorStates));
+        utils.showSuccess(toolbarManager.ui.btnSave.querySelector('.icon'));
     },
 
     toggleGallery: function () {
