@@ -182,15 +182,16 @@ const toolbarManager = {
 
     cacheDOM: function () {
         this.ui.toolbar = document.querySelector('.toolbar');
+        this.ui.actionbar = document.querySelector('.actionbar');
         this.ui.editTools = this.ui.toolbar.querySelectorAll('button.edit-group');
-        this.ui.btnClear = this.ui.toolbar.querySelector('button.clear');
-        this.ui.btnGrid = this.ui.toolbar.querySelector('button.grid');
-        this.ui.btnDownload = this.ui.toolbar.querySelector('button.download');
-        this.ui.btnSave = this.ui.toolbar.querySelector('button.save');
-        this.ui.btnGallery = this.ui.toolbar.querySelector('button.gallery');
-        this.ui.btnUndo = this.ui.toolbar.querySelector('button.undo');
-        this.ui.btnRedo = this.ui.toolbar.querySelector('button.redo');
         this.ui.colorPicker = this.ui.toolbar.querySelector('input[type="color"]');
+        this.ui.btnClear = this.ui.actionbar.querySelector('button.clear');
+        this.ui.btnGrid = this.ui.actionbar.querySelector('button.grid');
+        this.ui.btnDownload = this.ui.actionbar.querySelector('button.download');
+        this.ui.btnSave = this.ui.actionbar.querySelector('button.save');
+        this.ui.btnGallery = this.ui.actionbar.querySelector('button.gallery');
+        this.ui.btnUndo = this.ui.actionbar.querySelector('button.undo');
+        this.ui.btnRedo = this.ui.actionbar.querySelector('button.redo');
     },
 
     getActiveTool: function () {

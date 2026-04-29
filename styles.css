@@ -1,4 +1,6 @@
 :root {
+    --bg: #fff;
+    --bg-btn: #fff;
     --primary-btn: red;
     --secondary-btn: #ff9595;
     --pattern: #ffd5d596;
@@ -20,6 +22,7 @@ body {
     padding: 0 10px;
     margin: auto;
     max-width: 760px;
+    background-color: var(--bg);
 }
 
 .close {
@@ -35,7 +38,7 @@ h1 {
 }
 
 .header {
-    margin: 20px 0 20px 45px;
+    margin: 20px 0 20px 90px;
 }
 
 .header p {
@@ -55,25 +58,62 @@ h1 {
     align-items: flex-start;
 }
 
-.toolbar {
+.workspace {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    box-sizing: border-box;
-    border-radius: 10px;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
 }
 
-.toolbar > .divider {
-    height: 3px;
+.toolbar {
+    display: grid;
+    grid-template-columns: repeat(2, 35px);
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.main-content .toolbar > input {
+    grid-column: span 2;
+    width: 100%;
+    border-radius: 10px
+}
+
+.action-group {
+    display: flex;
+    gap: 10px;
+}
+
+.push-right {
+    margin-left: auto;
+}
+
+.actionbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.divider {
+    background-color: var(--primary-btn);
     box-shadow: 1px 1px black;
     border-radius: 10px;
-    background-color: #ff0000;
-    margin: 0px 0;
+    margin: 5px 0;
+    width: 25px;
+    height: 2px;
+}
+
+.divider.vertical {
+    width: 2px;
+    height: 25px;
+    margin: 0 5px;
 }
 
 .main-wrapper button,
 .svg-container button,
-.main-content .toolbar > input {
+.toolbar > input {
     width: 35px;
     height: 35px;
     padding: 0;
@@ -84,6 +124,7 @@ h1 {
     cursor: pointer;
     box-sizing: border-box;
     background: none;
+    background-color: var(--bg-btn);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -230,6 +271,7 @@ input[type="color"]::-moz-color-swatch {
         inset var(--grid-line-weight-negative) var(--grid-line-weight) var(--grid-lines);
 }
 
+/* grid-size-container */
 .grid-size-container {
     align-self: flex-end;
     display: flex;
@@ -243,8 +285,8 @@ input[type="color"]::-moz-color-swatch {
 }
 
 .grid-size-container .grid-size {
-    width: 80px;
     text-align: center;
+    width: 80px;
 }
 
 .svg-container {
@@ -321,6 +363,7 @@ input[type="color"]::-moz-color-swatch {
     gap: 6px;
 }
 
+/* icons */
 .icon {
     display: inline-block;
     width: 20px;
@@ -394,7 +437,8 @@ input[type="color"]::-moz-color-swatch {
     background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzAwMDAwMCIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0yMzYsMTQ0YTY4LjA3LDY4LjA3LDAsMCwxLTY4LDY4SDgwYTEyLDEyLDAsMCwxLDAtMjRoODhhNDQsNDQsMCwwLDAsMC04OEg2MWwyNy41MiwyNy41MWExMiwxMiwwLDAsMS0xNywxN2wtNDgtNDhhMTIsMTIsMCwwLDEsMC0xN2w0OC00OGExMiwxMiwwLDEsMSwxNywxN0w2MSw3NkgxNjhBNjguMDgsNjguMDgsMCwwLDEsMjM2LDE0NFoiPjwvcGF0aD48L3N2Zz4=');
 }
 
-.icon.icon-redo {
+.icon.icon-redo,
+.icon.icon-brighten {
     transform: scaleX(-1);
 }
 
@@ -403,6 +447,14 @@ input[type="color"]::-moz-color-swatch {
     background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzAwMDAwMCIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0xMzQuODgsNi4xN2ExMiwxMiwwLDAsMC0xMy43NiwwLDI1OSwyNTksMCwwLDAtNDIuMTgsMzlDNTAuODUsNzcuNDMsMzYsMTExLjYzLDM2LDE0NGE5Miw5MiwwLDAsMCwxODQsMEMyMjAsNjYuNjQsMTM4LjM2LDguNiwxMzQuODgsNi4xN1pNMTk0LjA4LDE2MEgxNDBWMTQ0aDU2QTY4LDY4LDAsMCwxLDE5NC4wOCwxNjBaTTE0MCwxMjBWMTA0aDQ3YTExNSwxMTUsMCwwLDEsNS42OCwxNlptMTkuMy01OC43MUExOTcuMjksMTk3LjI5LDAsMCwxLDE3My42OCw4MEgxNDBWNDEuNDZBMjQzLjUsMjQzLjUsMCwwLDEsMTU5LjMsNjEuMjlaTTYwLDE0NGMwLTMzLjMxLDIwLTYzLjM3LDM2LjctODIuNzFBMjQzLjUsMjQzLjUsMCwwLDEsMTE2LDQxLjQ2VjIxMC45MkE2OC4xLDY4LjEsMCwwLDEsNjAsMTQ0Wm04MCw2Ni45MlYxODRoNDIuOTRBNjgsNjgsMCwwLDEsMTQwLDIxMC45MloiPjwvcGF0aD48L3N2Zz4=');
 }
 
-.icon.icon-brighten {
-    transform: scaleX(-1);
+.icon.icon-picker {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzAwMDAwMCIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0yMjgsNjcuMjRhMzkuNzcsMzkuNzcsMCwwLDAtMTIuNTEtMjguNTJDMTk5LjkxLDI0LDE3NC43MSwyNC41LDE1OS4yOSwzOS45M0wxNDIuNDgsNTYuODRhMjgsMjgsMCwwLDAtMzUuNjQsMy4yOWwtOSw5YTIwLDIwLDAsMCwwLS43MywyNy40OUw0OC45LDE0NC44NEE0My43Niw0My43NiwwLDAsMCwzNywxODUuMjhsLTcuNSwxNy4xOWExNy42NiwxNy42NiwwLDAsMCwzLjcxLDE5LjY1LDE5LjksMTkuOSwwLDAsMCwyMi4xNSw0LjE5bDE2LjMxLTcuMTNhNDMuODksNDMuODksMCwwLDAsMzkuNDUtMTIuMDlsNDguMjQtNDguMjZhMjAsMjAsMCwwLDAsMjcuNDctLjczbDktOWEyOC4wNiwyOC4wNiwwLDAsMCwzLjI1LTM1LjcxbDE3LjI0LTE3LjM0QTM5LjY5LDM5LjY5LDAsMCwwLDIyOCw2Ny4yNFpNMTQyLjM1LDE0MS45LDEzNi4yOSwxNDhINzkuNzNsMzQuMzQtMzQuMzZabS00OC4yLDQ4LjIxYTIwLDIwLDAsMCwxLTIwLDUsMTEuOTMsMTEuOTMsMCwwLDAtOC4zMi40N0w1NywxOTkuMzgsNjAuNjksMTkxYTEyLDEyLDAsMCwwLC4zNy04LjY0QTIwLDIwLDAsMCwxLDYwLjQxLDE3Mmg1MS44OFptMTA1LjE0LTExMS0yNS4zNywyNS41MmExMiwxMiwwLDAsMCwwLDE3bDQuODgsNC44OGE0LDQsMCwwLDEsMCw1LjY2bC02LjE0LDYuMTUtNC44OC00Ljg5aDBMMTIyLjU1LDg4LjE0aDBsLTQuODgtNC44OSw2LjE0LTYuMTRhNCw0LDAsMCwxLDUuNjYsMEwxMzQuMzUsODJhMTIsMTIsMCwwLDAsOC40OSwzLjUxaDBBMTIsMTIsMCwwLDAsMTUxLjM0LDgybDI0Ljk0LTI1LjA4YzYuMy02LjMsMTYuNDgtNi42MywyMi43MS0uNzRhMTYsMTYsMCwwLDEsLjMsMjNaIj48L3BhdGg+PC9zdmc+');
+}
+
+.icon.icon-mirror {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzAwMDAwMCIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0xMDQsMjAuNDFhMTkuODMsMTkuODMsMCwwLDAtMjIuNCwxMS44MWMtLjA3LjE1LS4xMy4zMS0uMTkuNDZMMjEuNDcsMTkyLjQ5QTIwLDIwLDAsMCwwLDQwLDIyMGg2MGEyMCwyMCwwLDAsMCwyMC0yMFY0MEExOS44MywxOS44MywwLDAsMCwxMDQsMjAuNDFaTTk2LDE5Nkg0NS43OUw5Niw2Mi4wOVptMTM4LjUzLTMuNTFMMTc0LjYxLDMyLjY4Yy0uMDYtLjE1LS4xMi0uMzEtLjE5LS40NkEyMCwyMCwwLDAsMCwxMzYsNDBWMjAwYTIwLDIwLDAsMCwwLDIwLDIwaDYwYTIwLDIwLDAsMCwwLDE4LjU0LTI3LjUxWk0xNjAsMTk2VjYyLjA5TDIxMC4yMSwxOTZaIj48L3BhdGg+PC9zdmc+');
+}
+
+.icon.icon-rotate {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzAwMDAwMCIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0yNDQsNTZ2NDhhMTIsMTIsMCwwLDEtMTIsMTJIMTg0YTEyLDEyLDAsMSwxLDAtMjRIMjAxLjFsLTE5LTE3LjM4Yy0uMTMtLjEyLS4yNi0uMjQtLjM4LS4zN0E3Niw3NiwwLDEsMCwxMjcsMjA0aDFhNzUuNTMsNzUuNTMsMCwwLDAsNTIuMTUtMjAuNzIsMTIsMTIsMCwwLDEsMTYuNDksMTcuNDVBOTkuNDUsOTkuNDUsMCwwLDEsMTI4LDIyOGgtMS4zN0ExMDAsMTAwLDAsMSwxLDE5OC41MSw1Ny4wNkwyMjAsNzYuNzJWNTZhMTIsMTIsMCwwLDEsMjQsMFoiPjwvcGF0aD48L3N2Zz4=');
 }
