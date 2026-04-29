@@ -200,6 +200,7 @@ const toolbarManager = {
         this.ui.btnRotate = this.ui.toolbar.querySelector('button.rotate');
         this.ui.btnMirror = this.ui.toolbar.querySelector('button.mirror');
         this.ui.btnMove = this.ui.toolbar.querySelector('button.move');
+        this.ui.btnBgFill = this.ui.toolbar.querySelector('button.bg-fill');
         this.ui.btnGenerate = this.ui.actionbar.querySelector('button.generate-svg');
     },
 
@@ -207,7 +208,7 @@ const toolbarManager = {
         return this.activeEditTool;
     },
 
-    getPreviousTool:function(){
+    getPreviousTool: function () {
         return this.previousTool;
     },
 
@@ -238,6 +239,10 @@ const toolbarManager = {
 
         this.ui.btnMirror.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('mirrorCanvas'));
+        });
+
+        this.ui.btnBgFill.addEventListener('click', () => {
+            document.dispatchEvent(new CustomEvent('fillBackground'));
         });
 
         this.ui.btnDownload.addEventListener('click', () => {
@@ -668,6 +673,7 @@ const drawManager = {
         document.addEventListener('mirrorCanvas', () => this.mirror());
         document.addEventListener('toggleMirrorX', e => this.ui.gridContainer.classList.toggle('mirror-x', e.detail));
         document.addEventListener('toggleMirrorY', e => this.ui.gridContainer.classList.toggle('mirror-y', e.detail));
+        document.addEventListener('fillBackground', () => this.fillBackground());
     },
 
     applyTool: function (x, y, toolName) {
@@ -828,6 +834,27 @@ const drawManager = {
             }
         }
         document.dispatchEvent(new CustomEvent('canvasRebuilt', { detail: this.colorData }));
+    },
+
+    fillBackground: function () {
+        const pickedColor = toolbarManager.getColor();
+        let hasChanged = false;
+        const size = gridSizeManager.getGridSize();
+
+        const newColorData = JSON.parse(JSON.stringify(this.colorData));
+
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                if (newColorData[y][x] === '') {
+                    newColorData[y][x] = pickedColor;
+                    hasChanged = true;
+                }
+            }
+        }
+        if (hasChanged) {
+            this.loadFromData(newColorData);
+            document.dispatchEvent(new CustomEvent('saveHistory'));
+        }
     },
 
     rainbow: function (target) {
