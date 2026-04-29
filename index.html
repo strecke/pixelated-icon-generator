@@ -20,17 +20,20 @@
         <div class="main-content">
 
             <div class="toolbar">
-                <input type="color" class="color-picker" title="Pick Color">
-                <button class="draw edit-group active" data-tool="draw" title="Draw">
+                <button class="pciker edit-group" data-tool="picker" title="Eyedropper (p)">
+                    <span class="icon icon-picker"></span>
+                </button>
+                <input type="color" title="Pick Color">
+                <button class="draw edit-group active" data-tool="draw" title="Draw (d)">
                     <span class="icon icon-pen"></span>
                 </button>
-                <button class="rainbow edit-group" data-tool="rainbow" title="Rainbow">
+                <button class="rainbow edit-group" data-tool="rainbow" title="Rainbow (r)">
                     <span class="icon icon-rainbow"></span>
                 </button>
-                <button class="fill edit-group" data-tool="fill" title="Fill">
+                <button class="fill edit-group" data-tool="fill" title="Fill (f)">
                     <span class="icon icon-fill"></span>
                 </button>
-                <button class="erase edit-group" data-tool="erase" title="Erase">
+                <button class="erase edit-group" data-tool="erase" title="Erase (e)">
                     <span class="icon icon-eraser"></span>
                 </button>
                 <button class="darken edit-group" data-tool="darken" title="Darken">
@@ -38,6 +41,11 @@
                 </button>
                 <button class="brighten edit-group" data-tool="brighten" title="Brighten">
                     <span class="icon icon-brighten"></span>
+                </button>
+                <div class="divider"></div>
+
+                <button class="generate-svg" title="Generate SVG Code">
+                    <span class="icon icon-svg"></span>
                 </button>
             </div>
 
@@ -76,10 +84,8 @@
     </div>
 
     <div class="svg-container">
-        <button class="generate-svg">Generate SVG Code</button>
-
         <fieldset class="svg-code-wrapper close">
-            <legend>Show SVG Output</legend>
+            <legend>SVG Output</legend>
             <code class="svg-output"></code>
             <button class="copy-svg"><span class="icon icon-copy"></span></button>
         </fieldset>

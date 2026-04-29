@@ -169,7 +169,7 @@ gridSizeManager.init();
 
 const toolbarManager = {
     ui: {},
-    tools: ['draw', 'erase', 'fill', 'rainbow', 'darken', 'brighten'],
+    tools: ['draw', 'erase', 'fill', 'rainbow', 'darken', 'brighten', 'picker'],
     activeEditTool: 'draw',
     pickedColor: '#000000',
     holdTimer: null,
@@ -275,6 +275,7 @@ const toolbarManager = {
             else if (e.key === 'r') this.setActiveTool('rainbow');
             else if (e.key === 'f') this.setActiveTool('fill');
             else if (e.key === 'e') this.setActiveTool('erase');
+            else if (e.key === 'p') this.setActiveTool('picker');
             else if (e.key === 'c') this.ui.btnClear.click();
             else if (e.key === 'g') this.ui.btnGrid.click();
             else if (e.ctrlKey && e.key === 'z') document.dispatchEvent(new CustomEvent('undoAction'));
@@ -417,7 +418,7 @@ const svgManager = {
 
     cacheDOM: function () {
         this.ui.svgContainer = document.querySelector('.svg-container');
-        this.ui.btnGenerate = this.ui.svgContainer.querySelector('.generate-svg');
+        this.ui.btnGenerate = toolbarManager.ui.toolbar.querySelector('.generate-svg');
         this.ui.codeWrapper = this.ui.svgContainer.querySelector('.svg-code-wrapper');
         this.ui.svgOutput = this.ui.svgContainer.querySelector('.svg-output');
         this.ui.btnCopy = this.ui.svgContainer.querySelector('button.copy-svg');
@@ -744,6 +745,15 @@ const drawManager = {
         const randomB = Math.floor(Math.random() * 256);
         toolbarManager.onColorChange(utils.rgbToHex(randomR, randomG, randomB));
         this.draw(target);
+    },
+
+    picker: function (target) {
+        const row = parseInt(target.dataset.row, 10);
+        const column = parseInt(target.dataset.column, 10);
+        let color = this.colorData[row][column];
+        if (color === '') color = '#ffffff';
+        const fullHex = utils.decompressColor(color);
+        toolbarManager.onColorChange(fullHex);
     },
 
     updateColorData: function (target, color = '') {
