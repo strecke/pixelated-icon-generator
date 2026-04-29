@@ -169,7 +169,7 @@ gridSizeManager.init();
 
 const toolbarManager = {
     ui: {},
-    tools: ['draw', 'erase', 'fill', 'rainbow', 'darken', 'brighten', 'picker'],
+    tools: ['draw', 'erase', 'fill', 'rainbow', 'darken', 'brighten', 'picker', 'move'],
     activeEditTool: 'draw',
     pickedColor: '#000000',
     holdTimer: null,
@@ -194,6 +194,7 @@ const toolbarManager = {
         this.ui.btnRedo = this.ui.actionbar.querySelector('button.redo');
         this.ui.btnRotate = this.ui.toolbar.querySelector('button.rotate');
         this.ui.btnMirror = this.ui.toolbar.querySelector('button.mirror');
+        this.ui.btnMove = this.ui.toolbar.querySelector('button.move');
         this.ui.btnGenerate = this.ui.actionbar.querySelector('button.generate-svg');
     },
 
@@ -279,6 +280,7 @@ const toolbarManager = {
             else if (e.key === 'f') this.setActiveTool('fill');
             else if (e.key === 'e') this.setActiveTool('erase');
             else if (e.key === 'p') this.setActiveTool('picker');
+            else if (e.key === 'm') this.setActiveTool('move');
             else if (e.key === 'c') this.ui.btnClear.click();
             else if (e.key === 'g') this.ui.btnGrid.click();
             else if (e.ctrlKey && e.key === 'z') document.dispatchEvent(new CustomEvent('undoAction'));
@@ -550,6 +552,9 @@ const drawManager = {
     lastTool: null,
     lastX: null,
     lastY: null,
+    dragSnapshot: null,
+    dragStartX: null,
+    dragStartY: null,
     colorData: null,
     init: function () {
         this.cacheDOM();
@@ -585,15 +590,29 @@ const drawManager = {
             this.hasChanged = false;
             this.lastX = parseInt(e.target.dataset.column, 10);
             this.lastY = parseInt(e.target.dataset.row, 10);
-            this[toolbarManager.getActiveTool()](e.target);
+            const activeTool = toolbarManager.getActiveTool();
+
+            if (activeTool === 'move') {
+                this.dragSnapshot = JSON.parse(JSON.stringify(this.colorData));
+                this.dragStartX = this.lastX;
+                this.dragStartY = this.lastY;
+            } else {
+                this[activeTool](e.target);
+            }
         });
 
         this.ui.gridContainer.addEventListener('pointermove', e => {
             if (!this.active || !e.target.classList.contains('grid-cell')) return;
             const currentX = parseInt(e.target.dataset.column, 10);
             const currentY = parseInt(e.target.dataset.row, 10);
+            const activeTool = toolbarManager.getActiveTool();
             if (this.lastX === currentX && this.lastY === currentY) return;
-            if (toolbarManager.getActiveTool() === 'fill') {
+
+            if (activeTool === 'move') {
+                const dx = currentX - this.dragStartX;
+                const dy = currentY - this.dragStartY;
+                this.move(dx, dy);
+            } else if (activeTool === 'fill') {
                 this.fill(e.target);
             } else {
                 this.drawLine(this.lastX, this.lastY, currentX, currentY);
@@ -609,6 +628,7 @@ const drawManager = {
             this.hasChanged = false;
             this.lastX = null;
             this.lastY = null;
+            this.dragSnapshot = null;
             if (this.lastTool) {
                 toolbarManager.setActiveTool(this.lastTool);
                 this.lastTool = null;
@@ -709,6 +729,25 @@ const drawManager = {
         if (this.updateColorData(target)) target.style.backgroundColor = '';
     },
 
+    move: function (dx, dy) {
+        const size = gridSizeManager.getGridSize();
+        const newColorData = Array.from({ length: size }, () => new Array(size).fill(''));
+
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                const color = this.dragSnapshot[y][x];
+                if (color !== '') {
+                    const newX = ((x + dx) % size + size) % size;
+                    const newY = ((y + dy) % size + size) % size;
+                    newColorData[newY][newX] = color;
+                }
+            }
+        }
+        if (dx % size !== 0 || dy % size !== 0) this.hasChanged = true;
+        else this.hasChanged = false;
+        this.loadFromData(newColorData);
+    },
+
     fill: function (target) {
         const startX = parseInt(target.dataset.column, 10);
         const startY = parseInt(target.dataset.row, 10);
@@ -774,9 +813,9 @@ const drawManager = {
         return false;
     },
 
-    rotate: function() {
+    rotate: function () {
         const size = gridSizeManager.getGridSize();
-        const newColorData = Array.from({length: size}, ()=> new Array(size).fill(''));
+        const newColorData = Array.from({ length: size }, () => new Array(size).fill(''));
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
                 newColorData[x][size - 1 - y] = this.colorData[y][x];
@@ -786,7 +825,7 @@ const drawManager = {
         document.dispatchEvent(new CustomEvent('saveHistory'));
     },
 
-    mirror: function(){
+    mirror: function () {
         const newColorData = this.colorData.map(row => [...row].reverse());
         this.loadFromData(newColorData);
         document.dispatchEvent(new CustomEvent('saveHistory'));
