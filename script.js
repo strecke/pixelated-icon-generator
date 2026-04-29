@@ -434,7 +434,6 @@ const svgManager = {
 
         const resetSVGView = () => {
             this.ui.codeWrapper.classList.add('close');
-            this.ui.btnGenerate.classList.remove('close');
         };
 
         document.addEventListener('pixelChanged', resetSVGView);
@@ -509,7 +508,7 @@ const svgManager = {
 
         this.ui.svgOutput.textContent = svg.outerHTML;
         this.ui.codeWrapper.classList.remove('close');
-        this.ui.btnGenerate.classList.add('close');
+        this.ui.svgContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     },
 
     download: function () {
