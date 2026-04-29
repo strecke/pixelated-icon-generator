@@ -192,6 +192,8 @@ const toolbarManager = {
         this.ui.btnGallery = this.ui.actionbar.querySelector('button.gallery');
         this.ui.btnUndo = this.ui.actionbar.querySelector('button.undo');
         this.ui.btnRedo = this.ui.actionbar.querySelector('button.redo');
+        this.ui.btnRotate = this.ui.toolbar.querySelector('button.rotate');
+        this.ui.btnMirror = this.ui.toolbar.querySelector('button.mirror');
         this.ui.btnGenerate = this.ui.actionbar.querySelector('button.generate-svg');
     },
 
@@ -219,6 +221,14 @@ const toolbarManager = {
 
             this.ui.btnGrid.classList.toggle('active');
             document.dispatchEvent(new CustomEvent('toggleGridLines'));
+        });
+
+        this.ui.btnRotate.addEventListener('click', () => {
+            document.dispatchEvent(new CustomEvent('rotateCanvas'));
+        });
+
+        this.ui.btnMirror.addEventListener('click', () => {
+            document.dispatchEvent(new CustomEvent('mirrorCanvas'));
         });
 
         this.ui.btnDownload.addEventListener('click', () => {
@@ -610,6 +620,8 @@ const drawManager = {
         document.addEventListener('toggleGridLines', () => this.ui.gridContainer.classList.toggle('grid-active'));
         document.addEventListener('loadState', e => this.loadFromData(e.detail));
         document.addEventListener('restoreHistoryState', e => this.loadFromData(e.detail));
+        document.addEventListener('rotateCanvas', () => this.rotate());
+        document.addEventListener('mirrorCanvas', () => this.mirror());
     },
 
     loadFromData: function (newColorData) {
@@ -760,6 +772,24 @@ const drawManager = {
             return true;
         }
         return false;
+    },
+
+    rotate: function() {
+        const size = gridSizeManager.getGridSize();
+        const newColorData = Array.from({length: size}, ()=> new Array(size).fill(''));
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                newColorData[x][size - 1 - y] = this.colorData[y][x];
+            }
+        }
+        this.loadFromData(newColorData);
+        document.dispatchEvent(new CustomEvent('saveHistory'));
+    },
+
+    mirror: function(){
+        const newColorData = this.colorData.map(row => [...row].reverse());
+        this.loadFromData(newColorData);
+        document.dispatchEvent(new CustomEvent('saveHistory'));
     },
 };
 
