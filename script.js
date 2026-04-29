@@ -259,14 +259,6 @@ const toolbarManager = {
         this.ui.btnRedo.addEventListener('pointerleave', stopHolding);
         this.ui.btnRedo.addEventListener('pointercancel', stopHolding);
 
-        this.ui.btnUndo.addEventListener('click', () => {
-            document.dispatchEvent(new CustomEvent('undoAction'));
-        });
-
-        this.ui.btnRedo.addEventListener('click', () => {
-            document.dispatchEvent(new CustomEvent('redoAction'));
-        });
-
         this.ui.colorPicker.addEventListener('input', e => {
             this.onColorChange(e.target.value);
         });
