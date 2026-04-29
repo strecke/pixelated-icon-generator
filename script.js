@@ -174,6 +174,8 @@ const toolbarManager = {
     pickedColor: '#000000',
     holdTimer: null,
     rapidInterval: null,
+    isMirrorX: false,
+    isMirrorY: false,
 
     init: function () {
         this.cacheDOM();
@@ -185,6 +187,8 @@ const toolbarManager = {
         this.ui.actionbar = document.querySelector('.actionbar');
         this.ui.editTools = this.ui.toolbar.querySelectorAll('button.edit-group');
         this.ui.colorPicker = this.ui.toolbar.querySelector('input[type="color"]');
+        this.ui.btnDrawX = this.ui.toolbar.querySelector('button.draw-x');
+        this.ui.btnDrawY = this.ui.toolbar.querySelector('button.draw-y');
         this.ui.btnClear = this.ui.actionbar.querySelector('button.clear');
         this.ui.btnGrid = this.ui.actionbar.querySelector('button.grid');
         this.ui.btnDownload = this.ui.actionbar.querySelector('button.download');
@@ -219,7 +223,6 @@ const toolbarManager = {
         });
 
         this.ui.btnGrid.addEventListener('click', () => {
-
             this.ui.btnGrid.classList.toggle('active');
             document.dispatchEvent(new CustomEvent('toggleGridLines'));
         });
@@ -239,6 +242,18 @@ const toolbarManager = {
 
         this.ui.btnSave.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('saveState'));
+        });
+
+        this.ui.btnDrawX.addEventListener('click', () => {
+            this.isMirrorX = !this.isMirrorX;
+            this.ui.btnDrawX.classList.toggle('active', this.isMirrorX);
+            document.dispatchEvent(new CustomEvent('toggleMirrorX', { detail: this.isMirrorX }));
+        });
+
+        this.ui.btnDrawY.addEventListener('click', () => {
+            this.isMirrorY = !this.isMirrorY;
+            this.ui.btnDrawY.classList.toggle('active', this.isMirrorY);
+            document.dispatchEvent(new CustomEvent('toggleMirrorY', { detail: this.isMirrorY }));
         });
 
         this.ui.btnGallery.addEventListener('click', () => {
@@ -590,6 +605,7 @@ const drawManager = {
             this.hasChanged = false;
             this.lastX = parseInt(e.target.dataset.column, 10);
             this.lastY = parseInt(e.target.dataset.row, 10);
+
             const activeTool = toolbarManager.getActiveTool();
 
             if (activeTool === 'move') {
@@ -597,7 +613,7 @@ const drawManager = {
                 this.dragStartX = this.lastX;
                 this.dragStartY = this.lastY;
             } else {
-                this[activeTool](e.target);
+                this.applyTool(this.lastX, this.lastY, activeTool);
             }
         });
 
@@ -642,6 +658,34 @@ const drawManager = {
         document.addEventListener('restoreHistoryState', e => this.loadFromData(e.detail));
         document.addEventListener('rotateCanvas', () => this.rotate());
         document.addEventListener('mirrorCanvas', () => this.mirror());
+        document.addEventListener('toggleMirrorX', e => this.ui.gridContainer.classList.toggle('mirror-x', e.detail));
+        document.addEventListener('toggleMirrorY', e => this.ui.gridContainer.classList.toggle('mirror-y', e.detail));
+    },
+
+    applyTool: function (x, y, toolName) {
+        if (toolName === 'picker') {
+            const rowEl = this.ui.gridContainer.children[y];
+            if (rowEl && rowEl.children[x]) this[toolName](rowEl.children[x]);
+            return;
+        }
+
+        const size = gridSizeManager.getGridSize();
+        const coords = new Set([`${x},${y}`]);
+
+        if (toolbarManager.isMirrorX) coords.add(`${x},${size - 1 - y}`);
+        if (toolbarManager.isMirrorY) coords.add(`${size - 1 - x},${y}`);
+        if (toolbarManager.isMirrorX && toolbarManager.isMirrorY) {
+            coords.add(`${size - 1 - x},${size - 1 - y}`);
+        }
+
+        coords.forEach(coord => {
+            const [cx, cy] = coord.split(',').map(Number);
+            const rowEl = this.ui.gridContainer.children[cy];
+            if (rowEl) {
+                const cell = rowEl.children[cx];
+                if (cell) this[toolName](cell);
+            }
+        });
     },
 
     loadFromData: function (newColorData) {
@@ -678,11 +722,7 @@ const drawManager = {
 
         while (true) {
             if (!isFirstPixel) {
-                const rowEl = this.ui.gridContainer.children[y0];
-                if (rowEl) {
-                    const cell = rowEl.children[x0];
-                    if (cell) this[toolbarManager.getActiveTool()](cell);
-                }
+                this.applyTool(x0, y0, toolbarManager.getActiveTool());
             }
             isFirstPixel = false;
 
