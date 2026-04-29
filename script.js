@@ -192,6 +192,7 @@ const toolbarManager = {
         this.ui.btnGallery = this.ui.actionbar.querySelector('button.gallery');
         this.ui.btnUndo = this.ui.actionbar.querySelector('button.undo');
         this.ui.btnRedo = this.ui.actionbar.querySelector('button.redo');
+        this.ui.btnGenerate = this.ui.actionbar.querySelector('button.generate-svg');
     },
 
     getActiveTool: function () {
@@ -418,7 +419,7 @@ const svgManager = {
 
     cacheDOM: function () {
         this.ui.svgContainer = document.querySelector('.svg-container');
-        this.ui.btnGenerate = toolbarManager.ui.toolbar.querySelector('.generate-svg');
+        this.ui.btnGenerate = toolbarManager.ui.btnGenerate;
         this.ui.codeWrapper = this.ui.svgContainer.querySelector('.svg-code-wrapper');
         this.ui.svgOutput = this.ui.svgContainer.querySelector('.svg-output');
         this.ui.btnCopy = this.ui.svgContainer.querySelector('button.copy-svg');
