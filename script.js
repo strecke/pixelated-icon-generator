@@ -171,6 +171,7 @@ const toolbarManager = {
     ui: {},
     tools: ['draw', 'erase', 'fill', 'rainbow', 'darken', 'brighten', 'picker', 'move'],
     activeEditTool: 'draw',
+    previousTool: 'draw',
     pickedColor: '#000000',
     holdTimer: null,
     rapidInterval: null,
@@ -204,6 +205,10 @@ const toolbarManager = {
 
     getActiveTool: function () {
         return this.activeEditTool;
+    },
+
+    getPreviousTool:function(){
+        return this.previousTool;
     },
 
     getColor: function () {
@@ -287,6 +292,8 @@ const toolbarManager = {
 
         this.ui.colorPicker.addEventListener('input', e => {
             this.onColorChange(e.target.value);
+            const currentTool = this.getActiveTool();
+            if (currentTool !== 'fill') this.setActiveTool('draw');
         });
 
         document.addEventListener('keydown', e => {
@@ -308,6 +315,7 @@ const toolbarManager = {
         if (this.tools.includes(btn.dataset.tool) && btn) {
             this.ui.editTools.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
+            this.previousTool = this.activeEditTool;
             this.activeEditTool = btn.dataset.tool;
         }
     },
@@ -837,6 +845,9 @@ const drawManager = {
         if (color === '') color = '#ffffff';
         const fullHex = utils.decompressColor(color);
         toolbarManager.onColorChange(fullHex);
+        const previousTool = toolbarManager.getPreviousTool();
+        if (previousTool === 'fill') toolbarManager.setActiveTool('fill');
+        else toolbarManager.setActiveTool('draw');
     },
 
     updateColorData: function (target, color = '') {
