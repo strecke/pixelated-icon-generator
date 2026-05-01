@@ -8,6 +8,7 @@ const CONFIG = {
     maxHistory: 50,
     showSuccessDuration: 2000,
     shadeStep: 10,
+    maxColorHistory: 6,
 };
 
 const utils = {
@@ -173,6 +174,7 @@ const toolbarManager = {
     activeEditTool: 'draw',
     previousTool: 'draw',
     pickedColor: '#000000',
+    colorHistory: [],
     holdTimer: null,
     rapidInterval: null,
     isMirrorX: false,
@@ -181,6 +183,7 @@ const toolbarManager = {
     init: function () {
         this.cacheDOM();
         this.bindEvents();
+        this.onColorChange(this.pickedColor);
     },
 
     cacheDOM: function () {
@@ -188,6 +191,7 @@ const toolbarManager = {
         this.ui.actionbar = document.querySelector('.actionbar');
         this.ui.editTools = this.ui.toolbar.querySelectorAll('button.edit-group');
         this.ui.colorPicker = this.ui.toolbar.querySelector('input[type="color"]');
+        this.ui.colorHistoryContainer = this.ui.toolbar.querySelector('.color-history');
         this.ui.btnDrawX = this.ui.toolbar.querySelector('button.draw-x');
         this.ui.btnDrawY = this.ui.toolbar.querySelector('button.draw-y');
         this.ui.btnClear = this.ui.actionbar.querySelector('button.clear');
@@ -296,9 +300,13 @@ const toolbarManager = {
         this.ui.btnRedo.addEventListener('pointercancel', stopHolding);
 
         this.ui.colorPicker.addEventListener('input', e => {
-            this.onColorChange(e.target.value);
+            this.onColorChange(e.target.value, true);
             const currentTool = this.getActiveTool();
             if (currentTool !== 'fill') this.setActiveTool('draw');
+        });
+
+        this.ui.colorPicker.addEventListener('change', e => {
+            this.addToColorHistory(e.target.value);
         });
 
         document.addEventListener('keydown', e => {
@@ -325,9 +333,34 @@ const toolbarManager = {
         }
     },
 
-    onColorChange: function (color) {
+    onColorChange: function (color, ignoreHistory = false) {
         this.pickedColor = color;
         this.ui.colorPicker.value = color;
+        if (!ignoreHistory) this.addToColorHistory(color);
+    },
+
+    addToColorHistory: function (color) {
+        this.colorHistory = this.colorHistory.filter(c => c !== color);
+        this.colorHistory.unshift(color);
+        if (this.colorHistory.length > CONFIG.maxColorHistory) this.colorHistory.pop();
+        this.renderColorHistory();
+    },
+
+    renderColorHistory: function () {
+        this.ui.colorHistoryContainer.replaceChildren();
+
+        this.colorHistory.forEach(color => {
+            const swatch = document.createElement('div');
+            swatch.className = 'swatch';
+            swatch.style.backgroundColor = color;
+            swatch.title = color;
+
+            swatch.addEventListener('click', () => {
+                this.onColorChange(color);
+                if (this.getActiveTool() !== 'fill') this.setActiveTool('draw');
+            });
+            this.ui.colorHistoryContainer.appendChild(swatch);
+        });
     },
 };
 
@@ -861,7 +894,7 @@ const drawManager = {
         const randomR = Math.floor(Math.random() * 256);
         const randomG = Math.floor(Math.random() * 256);
         const randomB = Math.floor(Math.random() * 256);
-        toolbarManager.onColorChange(utils.rgbToHex(randomR, randomG, randomB));
+        toolbarManager.onColorChange(utils.rgbToHex(randomR, randomG, randomB), true);
         this.draw(target);
     },
 

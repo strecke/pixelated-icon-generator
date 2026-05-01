@@ -20,10 +20,13 @@
         <div class="main-content">
 
             <div class="toolbar">
-                <button class="pciker edit-group" data-tool="picker" title="Eyedropper (p)">
+                <button class="picker edit-group" data-tool="picker" title="Eyedropper (p)">
                     <span class="icon icon-picker"></span>
                 </button>
-                <input type="color" title="Pick Color">
+                <div class="color-picker-wrapper" title="Pick Color">
+                    <input type="color">
+                </div>
+                <div class="color-history" title="Color History"></div>
                 <button class="draw edit-group active" data-tool="draw" title="Draw (d)">
                     <span class="icon icon-pen"></span>
                 </button>
@@ -51,14 +54,14 @@
                 <button class="move edit-group" data-tool="move" title="Move">
                     <span class="icon icon-move"></span>
                 </button>
+                <button class="bg-fill" title="Fill Background">
+                    <span class="icon icon-bg-fill"></span>
+                </button>
                 <button class="draw-x" title="Mirror vertically (Top/Bottom)">
                     <span class="icon icon-draw-x"></span>
                 </button>
                 <button class="draw-y" title="Mirror horizontally (Left/Right)">
                     <span class="icon icon-draw-y"></span>
-                </button>
-                <button class="bg-fill" title="Fill Background">
-                    <span class="icon icon-bg-fill"></span>
                 </button>
             </div>
 
@@ -77,7 +80,7 @@
                     <div class="action-group">
                         <button class="save" title="Save"><span class="icon icon-save"></span></button>
                         <button class="gallery" title="Gallery"><span class="icon icon-gallery"></span></button>
-                        <button class="download" title="Download"><span class="icon icon-download"></span></button>
+                        <button class="download" title="Download SVG"><span class="icon icon-download"></span></button>
                         <button class="generate-svg" title="Generate SVG Code"><span
                                 class="icon icon-svg"></span></button>
                     </div>

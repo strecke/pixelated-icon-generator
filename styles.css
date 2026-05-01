@@ -9,6 +9,16 @@
     --grid-line-weight-negative: -1px;
     --primary-text: #000;
     --secondary-text: #6c6c6c;
+    --shadow-default:
+        inset -1px -1px red,
+        inset 1px 1px black,
+        inset -2px -4px #ff9595,
+        inset 2px 2px #6c6c6c;
+    --shadow-active:
+        inset -3px -3px red,
+        inset 1px 0px 3px red,
+        inset 4px 4px white;
+    --shadow-hover: var(--shadow-active), 0.5px 0.5px 2px 0.5px red;
 }
 
 * {
@@ -73,10 +83,26 @@ h1 {
     box-sizing: border-box;
 }
 
-.main-content .toolbar > input {
-    /* grid-column: span 2; */
+/* native color palette */
+.color-picker-wrapper input[type="color"] {
     width: 100%;
-    border-radius: 10px;
+    height: 100%;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    background: none;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+}
+
+input[type="color"]::-moz-color-swatch {
+    border: none;
 }
 
 .action-group {
@@ -115,31 +141,37 @@ h1 {
 
 .main-wrapper button,
 .svg-container button,
-.toolbar > input {
+.color-picker-wrapper,
+.color-history {
+    display: flex;
     width: 35px;
     height: 35px;
     padding: 0;
     margin: 0;
-    border: none;
+    border: 1px solid black;
     border-radius: 10px;
     appearance: none;
     cursor: pointer;
     box-sizing: border-box;
     background: none;
     background-color: var(--bg-btn);
-    display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow:
-        inset -1px -1px red,
-        inset 1px 1px black,
-        inset -2px -4px #ff9595,
-        inset 2px 2px #6c6c6c;
-    border: 1px solid black;
+    overflow: hidden;
+    box-shadow: var(--shadow-default);
+}
+
+.color-history,
+.color-picker-wrapper {
+    position: relative;
+    box-shadow: none;
 }
 
 .main-wrapper button,
-.svg-container button {
+.svg-container button,
+.color-history,
+.color-history::after,
+.color-picker-wrapper::after {
     transition:
         background 0.3s ease-in-out,
         box-shadow 0.1s ease-in-out,
@@ -149,10 +181,7 @@ h1 {
 
 .main-wrapper button.active,
 .svg-container button.active {
-    box-shadow:
-        inset -3px -3px red,
-        inset 1px 0px 3px red,
-        inset 4px 4px white;
+    box-shadow: var(--shadow-active);
     background: #ff9595;
     border: 1.5px solid black;
 }
@@ -165,25 +194,50 @@ h1 {
 
 .main-wrapper button:not(.active):hover,
 .svg-container button:not(.active):hover {
-    box-shadow:
-        inset -3px -3px red,
-        inset 1px 0px 3px red,
-        inset 4px 4px white,
-        0.5px 0.5px 2px 0.5px red;
+    box-shadow: var(--shadow-hover);
     background: #ff9595;
     border: 1.5px solid black;
 }
 
-input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 0;
+/* color palettes */
+.color-history {
+    grid-column: span 2;
+    width: 100%;
+    position: relative;
 }
 
-input[type="color"]::-webkit-color-swatch {
-    border: none;
+.color-history::after,
+.color-picker-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-shadow: var(--shadow-default);
+    pointer-events: none;
+    border-radius: 8px;
 }
 
-input[type="color"]::-moz-color-swatch {
-    border: none;
+.color-history:hover,
+.color-picker-wrapper:hover {
+    box-shadow: 0.5px 0.5px 2px 0.5px red;
+    border: 1.5px solid black;
+}
+
+.color-history:hover::after,
+.color-picker-wrapper:hover::after {
+    box-shadow:
+        inset -3px -3px red,
+        inset 1px 0px 3px red,
+        0.5px 0.5px 2px 0.5px transparent;
+}
+
+.color-history .swatch {
+    flex: 1;
+    height: 100%;
+    transition: flex 0.25s cubic-bezier(0.25, 0.1, 0.25, 1), filter 0.2s ease;
+}
+
+.color-history .swatch:hover {
+    flex: 2.5;
 }
 
 /* gallery */
