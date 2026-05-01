@@ -411,6 +411,10 @@ const saveManager = {
 
         localStorage.setItem('colorData', JSON.stringify(this.colorStates));
         utils.showSuccess(toolbarManager.ui.btnSave.querySelector('.icon'));
+
+        if (!this.ui.gallery.classList.contains('close')) {
+            this.renderGallery();
+        }
     },
 
     toggleGallery: function () {
@@ -420,12 +424,15 @@ const saveManager = {
         this.ui.btnGallery.classList.toggle('active');
 
         if (this.ui.gallery.classList.contains('close')) return;
+        
+        this.renderGallery();
+    },
 
+    renderGallery: function () {
         this.ui.gallery.replaceChildren();
         this.colorStates.forEach(state => {
-            this.ui.gallery.appendChild(this.createItem(state));
+            this.ui.gallery.prepend(this.createItem(state));
         });
-
     },
 
     deleteEntry: function (id) {
