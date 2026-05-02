@@ -109,6 +109,7 @@ const gridSizeManager = {
 
                 const event = new CustomEvent('gridSizeChanged', { detail: this.gridSize });
                 document.dispatchEvent(event);
+                lastGridSize = this.gridSize;
             }
         };
 
@@ -116,11 +117,13 @@ const gridSizeManager = {
         this.ui.btnPlus.addEventListener('pointerup', stopHolding);
         this.ui.btnPlus.addEventListener('pointerleave', stopHolding);
         this.ui.btnPlus.addEventListener('pointercancel', stopHolding);
+        this.ui.btnPlus.addEventListener('contextmenu', e => e.preventDefault());
 
         this.ui.btnMinus.addEventListener('pointerdown', () => startHolding(-1));
         this.ui.btnMinus.addEventListener('pointerup', stopHolding);
         this.ui.btnMinus.addEventListener('pointerleave', stopHolding);
         this.ui.btnMinus.addEventListener('pointercancel', stopHolding);
+        this.ui.btnMinus.addEventListener('contextmenu', e => e.preventDefault());
 
         document.addEventListener('lostpointercapture', () => stopHolding());
 
@@ -304,11 +307,13 @@ const toolbarManager = {
         this.ui.btnUndo.addEventListener('pointerup', stopHolding);
         this.ui.btnUndo.addEventListener('pointerleave', stopHolding);
         this.ui.btnUndo.addEventListener('pointercancel', stopHolding);
+        this.ui.btnUndo.addEventListener('contextmenu', e => e.preventDefault());
 
         this.ui.btnRedo.addEventListener('pointerdown', () => startHolding('redoAction'));
         this.ui.btnRedo.addEventListener('pointerup', stopHolding);
         this.ui.btnRedo.addEventListener('pointerleave', stopHolding);
         this.ui.btnRedo.addEventListener('pointercancel', stopHolding);
+        this.ui.btnRedo.addEventListener('contextmenu', e => e.preventDefault());
 
         this.ui.colorPicker.addEventListener('input', e => {
             this.onColorChange(e.target.value, true);

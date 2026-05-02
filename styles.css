@@ -159,6 +159,10 @@ input[type="color"]::-moz-color-swatch {
     justify-content: center;
     overflow: hidden;
     box-shadow: var(--shadow-default);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: pan-x;
 }
 
 .color-history,
