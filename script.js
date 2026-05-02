@@ -719,6 +719,8 @@ const drawManager = {
 
         this.ui.gridContainer.addEventListener('pointerdown', e => {
             if (!e.target.classList.contains('grid-cell')) return;
+
+            if (e.target.hasPointerCapture(e.pointerId)) e.target.releasePointerCapture(e.pointerId);
             if (e.button === 2) {
                 this.lastTool = toolbarManager.getActiveTool();
                 const newTool = this.lastTool === 'erase' ? 'draw' : 'erase';
