@@ -125,6 +125,16 @@ const gridSizeManager = {
         document.addEventListener('lostpointercapture', () => stopHolding());
 
         document.addEventListener('clearCanvas', () => this.createGrid());
+
+        document.addEventListener('changeGridSize', e => {
+            const factor = e.detail;
+            lastGridSize = this.gridSize;
+            this.updateGridSize(factor);
+            if (lastGridSize !== this.gridSize) {
+                this.createGrid();
+                document.dispatchEvent(new CustomEvent('gridSizeChanged', { detail: this.gridSize }));
+            }
+        });
     },
 
     updateGridSize: function (factor = 0) {
@@ -357,7 +367,15 @@ const toolbarManager = {
                     case 'h': this.ui.btnWelcome.click(); break;
                     case 'k': this.setActiveTool('brighten'); break;
                     case 'l': this.setActiveTool('darken'); break;
-                    case 'escape': if (!saveManager.ui.gallery.classList.contains('close')) this.ui.btnGallery.click(); break;
+                    case 'escape':
+                        if (!saveManager.ui.gallery.classList.contains('close')) this.ui.btnGallery.click();
+                        break;
+                    case '+':
+                        document.dispatchEvent(new CustomEvent('changeGridSize', { detail: 1 }));
+                        break;
+                    case '-':
+                        document.dispatchEvent(new CustomEvent('changeGridSize', { detail: -1 }));
+                        break;
                 }
             }
         });
