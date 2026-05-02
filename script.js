@@ -206,6 +206,7 @@ const toolbarManager = {
         this.ui.btnMove = this.ui.toolbar.querySelector('button.move');
         this.ui.btnBgFill = this.ui.toolbar.querySelector('button.bg-fill');
         this.ui.btnGenerate = this.ui.actionbar.querySelector('button.generate-svg');
+        this.ui.helpModal = document.getElementById('help-modal');
     },
 
     getActiveTool: function () {
@@ -310,16 +311,67 @@ const toolbarManager = {
         });
 
         document.addEventListener('keydown', e => {
-            if (e.key === 'd') this.setActiveTool('draw');
-            else if (e.key === 'r') this.setActiveTool('rainbow');
-            else if (e.key === 'f') this.setActiveTool('fill');
-            else if (e.key === 'e') this.setActiveTool('erase');
-            else if (e.key === 'p') this.setActiveTool('picker');
-            else if (e.key === 'm') this.setActiveTool('move');
-            else if (e.key === 'c') this.ui.btnClear.click();
-            else if (e.key === 'g') this.ui.btnGrid.click();
-            else if (e.ctrlKey && e.key === 'z') document.dispatchEvent(new CustomEvent('undoAction'));
-            else if (e.ctrlKey && (e.key === 'y' || (e.shiftKey && e.key === 'Z'))) document.dispatchEvent(new CustomEvent('redoAction'));
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key.toLocaleLowerCase()) {
+                    case 'z':
+                        e.preventDefault();
+                        if (e.shiftKey) document.dispatchEvent(new CustomEvent('redoAction'));
+                        else document.dispatchEvent(new CustomEvent('undoAction'));
+                        break;
+                    case 'y':
+                        e.preventDefault();
+                        document.dispatchEvent(new CustomEvent('redoAction'));
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        this.ui.btnSave.click();
+                        break;
+                    case 'd':
+                        e.preventDefault();
+                        this.btnDownload.click();
+                        break;
+                    case 'g':
+                        e.preventDefault();
+                        this.ui.btnGallery.click();
+                        break;
+                    case 'c':
+                        this.ui.btnGenerate.click();
+                        break;
+                }
+            } else {
+                switch (e.key.toLowerCase()) {
+                    case 'd': this.setActiveTool('draw'); break;
+                    case 'r': this.setActiveTool('rainbow'); break;
+                    case 'e': this.setActiveTool('erase'); break;
+                    case 'f': this.setActiveTool('fill'); break;
+                    case 'p': this.setActiveTool('picker'); break;
+                    case 'm': this.setActiveTool('move'); break;
+                    case 'c': this.ui.btnClear.click(); break;
+                    case 'g': this.ui.btnGrid.click(); break;
+                    case 'b': this.ui.btnBgFill.click(); break;
+                    case 'o': this.btnRotate.click(); break;
+                    case 'i': this.btnMirror.click(); break;
+                    case 'x': this.btnDrawX.click(); break;
+                    case 'y': this.ui.btnDrawY.click(); break;
+                    case 'h': this.ui.btnWelcome.click(); break;
+                    case 'k': this.setActiveTool('brighten'); break;
+                    case 'l': this.setActiveTool('darken'); break;
+                    case 'escape': if (!saveManager.ui.gallery.classList.contains('close')) this.ui.btnGallery.click(); break;
+                }
+            }
+        });
+
+        this.ui.helpModal.addEventListener('click', (e) => {
+            const dialogDimensions = this.ui.helpModal.getBoundingClientRect();
+            if (
+                e.clientX < dialogDimensions.left ||
+                e.clientX > dialogDimensions.right ||
+                e.clientY < dialogDimensions.top ||
+                e.clientY > dialogDimensions.bottom
+            ) {
+                this.ui.helpModal.close();
+            }
         });
     },
 
@@ -424,7 +476,7 @@ const saveManager = {
         this.ui.btnGallery.classList.toggle('active');
 
         if (this.ui.gallery.classList.contains('close')) return;
-        
+
         this.renderGallery();
     },
 
