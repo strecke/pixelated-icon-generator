@@ -329,7 +329,7 @@ const toolbarManager = {
                         break;
                     case 'd':
                         e.preventDefault();
-                        this.btnDownload.click();
+                        this.ui.btnDownload.click();
                         break;
                     case 'g':
                         e.preventDefault();
@@ -350,9 +350,9 @@ const toolbarManager = {
                     case 'c': this.ui.btnClear.click(); break;
                     case 'g': this.ui.btnGrid.click(); break;
                     case 'b': this.ui.btnBgFill.click(); break;
-                    case 'o': this.btnRotate.click(); break;
-                    case 'i': this.btnMirror.click(); break;
-                    case 'x': this.btnDrawX.click(); break;
+                    case 'o': this.ui.btnRotate.click(); break;
+                    case 'i': this.ui.btnMirror.click(); break;
+                    case 'x': this.ui.btnDrawX.click(); break;
                     case 'y': this.ui.btnDrawY.click(); break;
                     case 'h': this.ui.btnWelcome.click(); break;
                     case 'k': this.setActiveTool('brighten'); break;
