@@ -505,6 +505,24 @@ const saveManager = {
 
     renderGallery: function () {
         this.ui.gallery.replaceChildren();
+        console.log(this.colorStates.length);
+        if (this.colorStates.length === 0) {
+            const emptyState = document.createElement('div');
+            const p1 = document.createElement('p');
+            const p2 = document.createElement('p');
+            const button = document.createElement('button');
+            const iconSpan = document.createElement('span');
+            
+            emptyState.className = 'gallery-empty-state';
+            iconSpan.className = 'icon icon-save';
+            p1.textContent = 'No items yet.';
+            button.title = 'Save (ctrl + s)';
+            button.appendChild(iconSpan);
+            p2.append('Draw something and click ', button, ' to save it here!');
+            emptyState.append(p1, p2);
+            this.ui.gallery.appendChild(emptyState);
+            return;
+        }
         this.colorStates.forEach(state => {
             this.ui.gallery.prepend(this.createItem(state));
         });
@@ -544,6 +562,7 @@ const saveManager = {
         btnDelete.addEventListener('click', () => {
             this.deleteEntry(state.id);
             item.remove();
+            if (this.colorStates.length === 0) this.renderGallery();
         });
 
         btnDelete.appendChild(iconDelete);
