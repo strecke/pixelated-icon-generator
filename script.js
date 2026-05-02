@@ -505,14 +505,13 @@ const saveManager = {
 
     renderGallery: function () {
         this.ui.gallery.replaceChildren();
-        console.log(this.colorStates.length);
         if (this.colorStates.length === 0) {
             const emptyState = document.createElement('div');
             const p1 = document.createElement('p');
             const p2 = document.createElement('p');
             const button = document.createElement('button');
             const iconSpan = document.createElement('span');
-            
+
             emptyState.className = 'gallery-empty-state';
             iconSpan.className = 'icon icon-save';
             p1.textContent = 'No items yet.';
@@ -1108,3 +1107,66 @@ const historyManager = {
 };
 
 historyManager.init();
+
+const scrollManager = {
+    ui: {},
+
+    init: function () {
+        this.cacheDOM();
+        this.bindEvents();
+    },
+
+    cacheDOM: function () {
+        this.ui.sliders = document.querySelectorAll('.toolbar, .actionbar');
+    },
+
+    bindEvents: function () {
+        this.ui.sliders.forEach(slider => {
+            let isDown = false;
+            let startX = null;
+            let scrollLeft = null;
+            let hasDragged = false;
+
+            slider.addEventListener('mousedown', e => {
+                if (e.button !== 0) return;
+                isDown = true;
+                hasDragged = false;
+                document.body.classList.add('grabbing');
+                startX = e.pageX - slider.offsetLeft;
+                scrollLeft = slider.scrollLeft;
+            });
+
+            const stopScrollHandling = () => {
+                if (!isDown) return;
+                isDown = false;
+                document.body.classList.remove('grabbing');
+            };
+
+            window.addEventListener('mousemove', e => {
+                if (!isDown) return;
+                if (e.buttons !== 1) {
+                    stopScrollHandling();
+                    return;
+                }
+
+                e.preventDefault();
+
+                const x = e.pageX - slider.offsetLeft;
+                const walk = x - startX;
+                if (Math.abs(walk) > 3) hasDragged = true;
+                slider.scrollLeft = scrollLeft - walk;
+            });
+
+            window.addEventListener('mouseup', () => stopScrollHandling());
+
+            slider.addEventListener('click', e => {
+                if (hasDragged) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
+        });
+    },
+};
+
+scrollManager.init();

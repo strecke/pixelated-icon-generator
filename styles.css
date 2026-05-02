@@ -795,6 +795,13 @@ input[type="color"]::-moz-color-swatch {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         width: 100%;
+        cursor: grab;
+    }
+
+    .grabbing * {
+        cursor: grabbing !important;
+        -webkit-user-select: none;
+        user-select: none;
     }
 
     .toolbar .divider,
