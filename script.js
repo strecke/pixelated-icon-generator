@@ -795,7 +795,7 @@ const drawManager = {
         this.ui.gridContainer.addEventListener('contextmenu', e => e.preventDefault());
 
         this.ui.gridContainer.addEventListener('pointerdown', e => {
-            if (!e.target.classList.contains('grid-cell')) return;
+            if (!e.target.hasAttribute('data-column')) return;
 
             if (e.target.hasPointerCapture(e.pointerId)) e.target.releasePointerCapture(e.pointerId);
             if (e.button === 2) {
@@ -820,7 +820,7 @@ const drawManager = {
         });
 
         this.ui.gridContainer.addEventListener('pointermove', e => {
-            if (!this.active || !e.target.classList.contains('grid-cell')) return;
+            if (!this.active || !e.target.hasAttribute('data-column')) return;
             const currentX = parseInt(e.target.dataset.column, 10);
             const currentY = parseInt(e.target.dataset.row, 10);
             const activeTool = toolbarManager.getActiveTool();
