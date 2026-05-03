@@ -772,6 +772,9 @@ const drawManager = {
     dragStartX: null,
     dragStartY: null,
     colorData: null,
+    animationFrameId: null,
+    latestPointerEvent: null,
+
     init: function () {
         this.cacheDOM();
         this.initColorData();
@@ -822,6 +825,11 @@ const drawManager = {
 
         this.ui.gridContainer.addEventListener('pointermove', e => {
             if (!this.active || !e.target.hasAttribute('data-column')) return;
+
+            this.latestPointerEvent = e;
+            if (!this.animationFrameId) {
+                this.animationFrameId = requestAnimationFrame(() => this.processPointerMove());
+            }
             const currentX = parseInt(e.target.dataset.column, 10);
             const currentY = parseInt(e.target.dataset.row, 10);
             const activeTool = toolbarManager.getActiveTool();
@@ -843,6 +851,7 @@ const drawManager = {
 
         document.addEventListener('pointerup', e => {
             if (this.active && this.hasChanged) document.dispatchEvent(new CustomEvent(EVENTS.saveHistory));
+            if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
             this.active = false;
             this.hasChanged = false;
             this.lastX = null;
@@ -867,6 +876,31 @@ const drawManager = {
         document.addEventListener(EVENTS.toggleMirrorX, e => this.ui.gridContainer.classList.toggle('mirror-x', e.detail));
         document.addEventListener(EVENTS.toggleMirrorY, e => this.ui.gridContainer.classList.toggle('mirror-y', e.detail));
         document.addEventListener(EVENTS.fillBackground, () => this.fillBackground());
+    },
+
+    processPointerMove: function () {
+        this.animationFrameId = null;
+        if (!this.active || !this.latestPointerEvent) return;
+
+        const target = this.latestPointerEvent.target;
+        const currentX = parseInt(target.dataset.column, 10);
+        const currentY = parseInt(target.dataset.row, 10);
+        const activeTool = toolbarManager.getActiveTool();
+
+        if (this.lastX === currentX && this.lastY === currentY) return;
+
+        if (activeTool === 'move') {
+            const dx = currentX - this.dragStartX;
+            const dy = currentY - this.dragStartY;
+            this.move(dx, dy);
+        } else if (activeTool === 'fill') {
+            this.fill(target);
+        } else {
+            this.drawLine(this.lastX, this.lastY, currentX, currentY);
+        }
+
+        this.lastX = currentX;
+        this.lastY = currentY;
     },
 
     applyTool: function (x, y, toolName) {
