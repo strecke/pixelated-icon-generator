@@ -815,7 +815,7 @@ const drawManager = {
             const activeTool = toolbarManager.getActiveTool();
 
             if (activeTool === 'move') {
-                this.dragSnapshot = JSON.parse(JSON.stringify(this.colorData));
+                this.dragSnapshot = this.colorData.map(row => [...row]);
                 this.dragStartX = this.lastX;
                 this.dragStartY = this.lastY;
             } else {
@@ -938,7 +938,7 @@ const drawManager = {
             gridSizeManager.createGrid();
         }
 
-        this.colorData = JSON.parse(JSON.stringify(newColorData));
+        this.colorData = newColorData.map(row => [...row]);
 
         for (let row = 0; row < newSize; row++) {
             for (let column = 0; column < newSize; column++) {
@@ -1073,7 +1073,7 @@ const drawManager = {
         let hasChanged = false;
         const size = gridSizeManager.getGridSize();
 
-        const newColorData = JSON.parse(JSON.stringify(this.colorData));
+        const newColorData = this.colorData.map(row => [...row]);
 
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
@@ -1170,7 +1170,7 @@ const historyManager = {
     },
 
     saveState: function () {
-        const currentState = JSON.parse(JSON.stringify(drawManager.getColorData()));
+        const currentState = drawManager.getColorData().map(row => [...row]);
         this.undoStack.push(currentState);
         if (this.undoStack.length > CONFIG.maxHistory) {
             this.undoStack.shift();
