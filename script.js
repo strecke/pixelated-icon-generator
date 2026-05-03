@@ -149,8 +149,6 @@ const gridSizeManager = {
 
         document.addEventListener('lostpointercapture', () => stopHolding());
 
-        document.addEventListener(EVENTS.clearCanvas, () => this.createGrid());
-
         document.addEventListener(EVENTS.changeGridSize, e => {
             const factor = e.detail;
             lastGridSize = this.gridSize;
@@ -169,23 +167,52 @@ const gridSizeManager = {
     },
 
     createGrid: function () {
-        this.ui.gridContainer.replaceChildren();
-        const fragment = document.createDocumentFragment();
+        const currentRows = this.ui.gridContainer.children;
+        const currentSize = currentRows.length;
+        const targetSize = this.gridSize;
 
-        for (let i = 0; i < this.gridSize; i++) {
-            const row = document.createElement('div');
-            row.className = 'grid-row';
-
-            for (let j = 0; j < this.gridSize; j++) {
-                const cell = document.createElement('div');
-                cell.className = 'grid-cell';
-                cell.dataset.row = i;
-                cell.dataset.column = j;
-                row.appendChild(cell);
-            }
-            fragment.appendChild(row);
+        if (currentSize === targetSize) {
+            this.updateTransparencyPattern();
+            return;
         }
-        this.ui.gridContainer.appendChild(fragment);
+
+        if (targetSize > currentSize) {
+            for (i = 0; i < currentSize; i++) {
+                const row = currentRows[i];
+                const fragment = document.createDocumentFragment();
+                for (let j = currentSize; j < targetSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.row = i;
+                    cell.dataset.column = j;
+                    fragment.appendChild(cell);
+                }
+                row.appendChild(fragment);
+            }
+
+            const rowFragment = document.createDocumentFragment();
+            for (let i = currentSize; i < targetSize; i++) {
+                const row = document.createElement('div');
+                row.className = 'grid-row';
+                for (let j = 0; j < targetSize; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.dataset.row = i;
+                    cell.dataset.column = j;
+                    row.appendChild(cell);
+                }
+                rowFragment.appendChild(row);
+            }
+            this.ui.gridContainer.appendChild(rowFragment);
+        } else {
+            while (this.ui.gridContainer.children.length > targetSize) {
+                this.ui.gridContainer.lastElementChild.remove();
+            }
+            for (let i = 0; i < targetSize; i++) {
+                const row = this.ui.gridContainer.children[i];
+                while (row.children.length > targetSize) row.lastElementChild.remove();
+            }
+        }
         this.updateTransparencyPattern();
     },
 
@@ -827,7 +854,10 @@ const drawManager = {
         });
 
         document.addEventListener(EVENTS.gridSizeChanged, () => this.initColorData());
-        document.addEventListener(EVENTS.clearCanvas, () => this.initColorData());
+        document.addEventListener(EVENTS.clearCanvas, () => {
+            this.initColorData();
+            this.clearDOMColors();
+        });
         document.addEventListener(EVENTS.toggleGridLines, () => this.ui.gridContainer.classList.toggle('grid-active'));
         document.addEventListener(EVENTS.loadState, e => this.loadFromData(e.detail));
         document.addEventListener(EVENTS.restoreHistoryState, e => this.loadFromData(e.detail));
@@ -886,6 +916,11 @@ const drawManager = {
             }
         }
         document.dispatchEvent(new CustomEvent(EVENTS.canvasRebuilt, { detail: this.colorData }));
+    },
+
+    clearDOMColors: function () {
+        const cells = this.ui.gridContainer.querySelectorAll('.grid-cell');
+        cells.forEach(cell => cell.style.backgroundColor = '');
     },
 
     drawLine: function (x0, y0, x1, y1) {
