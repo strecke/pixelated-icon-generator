@@ -1165,6 +1165,32 @@ const scrollManager = {
                     e.stopPropagation();
                 }
             }, true);
+
+            const wrapper = slider.closest('.scroll-wrapper');
+            if (wrapper) {
+                const btnLeft = wrapper.querySelector('.scroll-btn.left');
+                const btnRight = wrapper.querySelector('.scroll-btn.right');
+
+                const updateButtons = () => {
+                    const maxScroll = slider.scrollWidth - slider.clientWidth;
+                    if (btnLeft) btnLeft.style.display = slider.scrollLeft > 3 ? 'flex' : 'none';
+                    if (btnRight) btnRight.style.display = slider.scrollLeft < maxScroll - 3 ? 'flex' : 'none';
+                };
+                if (btnLeft) {
+                    btnLeft.addEventListener('click', () => {
+                        slider.scrollBy({ left: -150, behavior: 'smooth' });
+                    });
+                }
+                if (btnRight) {
+                    btnRight.addEventListener('click', () => {
+                        slider.scrollBy({ left: 150, behavior: 'smooth' });
+                    });
+                }
+                slider.addEventListener('scroll', updateButtons);
+                window.addEventListener('resize', updateButtons);
+                setTimeout(updateButtons, 100);
+            }
+
         });
     },
 };
