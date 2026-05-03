@@ -178,7 +178,7 @@ const gridSizeManager = {
         }
 
         if (targetSize > currentSize) {
-            for (i = 0; i < currentSize; i++) {
+            for (let i = 0; i < currentSize; i++) {
                 const row = currentRows[i];
                 const fragment = document.createDocumentFragment();
                 for (let j = currentSize; j < targetSize; j++) {
