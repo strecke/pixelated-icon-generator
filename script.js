@@ -481,7 +481,13 @@ const saveManager = {
     },
 
     initLoad: function () {
-        this.colorStates = JSON.parse(localStorage.getItem('colorData')) || [];
+        try {
+            const storedData = localStorage.getItem('colorData');
+            this.colorStates = storedData ? JSON.parse(storedData) : [];
+        } catch (error) {
+            console.error('Loading error: ', error);
+            this.colorStates = [];
+        }
     },
 
     bindEvents: function () {
