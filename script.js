@@ -177,16 +177,20 @@ const gridSizeManager = {
             return;
         }
 
+        const createCell = (r, c) => {
+            const cell = document.createElement('div');
+            cell.className = 'grid-cell';
+            cell.dataset.row = r;
+            cell.dataset.column = c;
+            return cell;
+        };
+
         if (targetSize > currentSize) {
             for (let i = 0; i < currentSize; i++) {
                 const row = currentRows[i];
                 const fragment = document.createDocumentFragment();
                 for (let j = currentSize; j < targetSize; j++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'grid-cell';
-                    cell.dataset.row = i;
-                    cell.dataset.column = j;
-                    fragment.appendChild(cell);
+                    fragment.appendChild(createCell(i, j));
                 }
                 row.appendChild(fragment);
             }
@@ -196,11 +200,7 @@ const gridSizeManager = {
                 const row = document.createElement('div');
                 row.className = 'grid-row';
                 for (let j = 0; j < targetSize; j++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'grid-cell';
-                    cell.dataset.row = i;
-                    cell.dataset.column = j;
-                    row.appendChild(cell);
+                    row.appendChild(createCell(i, j));
                 }
                 rowFragment.appendChild(row);
             }
