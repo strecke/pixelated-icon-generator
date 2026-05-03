@@ -611,8 +611,7 @@ const svgManager = {
         const gridSize = colorData.length;
         const svg = document.createElementNS(this.svgns, 'svg');
         svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        svg.viewBox.baseVal.width = gridSize;
-        svg.viewBox.baseVal.height = gridSize;
+        svg.setAttribute('viewBox', `0 0 ${gridSize} ${gridSize}`);
         svg.setAttribute('shape-rendering', 'crispEdges');
 
         const rectsByColor = {};
