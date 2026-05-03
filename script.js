@@ -1121,76 +1121,84 @@ const scrollManager = {
 
     bindEvents: function () {
         this.ui.sliders.forEach(slider => {
-            let isDown = false;
-            let startX = null;
-            let scrollLeft = null;
-            let hasDragged = false;
+            this.initDragToScroll(slider);
+            this.initScrollButtons(slider);
+        });
+    },
 
-            slider.addEventListener('mousedown', e => {
-                if (e.button !== 0) return;
-                isDown = true;
-                hasDragged = false;
-                document.body.classList.add('grabbing');
-                startX = e.pageX - slider.offsetLeft;
-                scrollLeft = slider.scrollLeft;
-            });
+    initDragToScroll: function (slider) {
+        let isDown = false;
+        let startX = null;
+        let scrollLeft = null;
+        let hasDragged = false;
 
-            const stopScrollHandling = () => {
-                if (!isDown) return;
-                isDown = false;
-                document.body.classList.remove('grabbing');
-            };
+        const stopScrollHandling = () => {
+            if (!isDown) return;
+            isDown = false;
+            document.body.classList.remove('grabbing');
+        };
 
-            window.addEventListener('mousemove', e => {
-                if (!isDown) return;
-                if (e.buttons !== 1) {
-                    stopScrollHandling();
-                    return;
-                }
+        slider.addEventListener('mousedown', e => {
+            if (e.button !== 0) return;
+            isDown = true;
+            hasDragged = false;
+            document.body.classList.add('grabbing');
+            startX = e.pageX - slider.offsetLeft;
+            scrollLeft = slider.scrollLeft;
+        });
 
-                e.preventDefault();
-
-                const x = e.pageX - slider.offsetLeft;
-                const walk = x - startX;
-                if (Math.abs(walk) > 3) hasDragged = true;
-                slider.scrollLeft = scrollLeft - walk;
-            });
-
-            window.addEventListener('mouseup', () => stopScrollHandling());
-
-            slider.addEventListener('click', e => {
-                if (hasDragged) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                }
-            }, true);
-
-            const wrapper = slider.closest('.scroll-wrapper');
-            if (wrapper) {
-                const btnLeft = wrapper.querySelector('.scroll-btn.left');
-                const btnRight = wrapper.querySelector('.scroll-btn.right');
-
-                const updateButtons = () => {
-                    const maxScroll = slider.scrollWidth - slider.clientWidth;
-                    if (btnLeft) btnLeft.style.display = slider.scrollLeft > 3 ? 'flex' : 'none';
-                    if (btnRight) btnRight.style.display = slider.scrollLeft < maxScroll - 3 ? 'flex' : 'none';
-                };
-                if (btnLeft) {
-                    btnLeft.addEventListener('click', () => {
-                        slider.scrollBy({ left: -150, behavior: 'smooth' });
-                    });
-                }
-                if (btnRight) {
-                    btnRight.addEventListener('click', () => {
-                        slider.scrollBy({ left: 150, behavior: 'smooth' });
-                    });
-                }
-                slider.addEventListener('scroll', updateButtons);
-                window.addEventListener('resize', updateButtons);
-                setTimeout(updateButtons, 100);
+        window.addEventListener('mousemove', e => {
+            if (!isDown) return;
+            if (e.buttons !== 1) {
+                stopScrollHandling();
+                return;
             }
 
+            e.preventDefault();
+            const x = e.pageX - slider.offsetLeft;
+            const walk = x - startX;
+            if (Math.abs(walk) > 3) hasDragged = true;
+            slider.scrollLeft = scrollLeft - walk;
         });
+
+        window.addEventListener('mouseup', () => stopScrollHandling());
+
+        slider.addEventListener('click', e => {
+            if (hasDragged) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        }, true);
+    },
+
+    initScrollButtons: function (slider) {
+        const wrapper = slider.closest('.scroll-wrapper');
+        if (!wrapper) return;
+
+        const btnLeft = wrapper.querySelector('.scroll-btn.left');
+        const btnRight = wrapper.querySelector('.scroll-btn.right');
+
+        const updateButtons = () => {
+            const maxScroll = slider.scrollWidth - slider.clientWidth;
+            if (btnLeft) btnLeft.style.display = slider.scrollLeft > 3 ? 'flex' : 'none';
+            if (btnRight) btnRight.style.display = slider.scrollLeft < maxScroll - 3 ? 'flex' : 'none';
+        };
+
+        if (btnLeft) {
+            btnLeft.addEventListener('click', () => {
+                slider.scrollBy({ left: -150, behavior: 'smooth' });
+            });
+        }
+
+        if (btnRight) {
+            btnRight.addEventListener('click', () => {
+                slider.scrollBy({ left: 150, behavior: 'smooth' });
+            });
+        }
+
+        slider.addEventListener('scroll', updateButtons);
+        window.addEventListener('resize', updateButtons);
+        setTimeout(updateButtons, 100);
     },
 };
 
