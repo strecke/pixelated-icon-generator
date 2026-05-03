@@ -11,6 +11,28 @@ const CONFIG = {
     maxColorHistory: 6,
 };
 
+const EVENTS = {
+    clearCanvas: 'clearCanvas',
+    gridSizeChanged: 'gridSizeChanged',
+    saveHistory: 'saveHistory',
+    undoAction: 'undoAction',
+    redoAction: 'redoAction',
+    changeGridSize: 'changeGridSize',
+    fillBackground: 'fillBackground',
+    restoreHistoryState: 'restoreHistoryState',
+    pixelChanged: 'pixelChanged',
+    toggleGridLines: 'toggleGridLines',
+    rotateCanvas: 'rotateCanvas',
+    mirrorCanvas: 'mirrorCanvas',
+    downloadSVG: 'downloadSVG',
+    saveState: 'saveState',
+    loadState: 'loadState',
+    toggleMirrorX: 'toggleMirrorX',
+    toggleMirrorY: 'toggleMirrorY',
+    toggleGallery: 'toggleGallery',
+    canvasRebuilt: 'canvasRebuilt',
+}
+
 const utils = {
     _timers: new WeakMap(),
     compressColor: function (hex) {
@@ -107,7 +129,7 @@ const gridSizeManager = {
             if (lastGridSize !== this.gridSize) {
                 this.createGrid();
 
-                const event = new CustomEvent('gridSizeChanged', { detail: this.gridSize });
+                const event = new CustomEvent(EVENTS.gridSizeChanged, { detail: this.gridSize });
                 document.dispatchEvent(event);
                 lastGridSize = this.gridSize;
             }
@@ -127,15 +149,15 @@ const gridSizeManager = {
 
         document.addEventListener('lostpointercapture', () => stopHolding());
 
-        document.addEventListener('clearCanvas', () => this.createGrid());
+        document.addEventListener(EVENTS.clearCanvas, () => this.createGrid());
 
-        document.addEventListener('changeGridSize', e => {
+        document.addEventListener(EVENTS.changeGridSize, e => {
             const factor = e.detail;
             lastGridSize = this.gridSize;
             this.updateGridSize(factor);
             if (lastGridSize !== this.gridSize) {
                 this.createGrid();
-                document.dispatchEvent(new CustomEvent('gridSizeChanged', { detail: this.gridSize }));
+                document.dispatchEvent(new CustomEvent(EVENTS.gridSizeChanged, { detail: this.gridSize }));
             }
         });
     },
@@ -243,49 +265,49 @@ const toolbarManager = {
         });
 
         this.ui.btnClear.addEventListener('click', () => {
-            document.dispatchEvent(new CustomEvent('clearCanvas'));
+            document.dispatchEvent(new CustomEvent(EVENTS.clearCanvas));
         });
 
         this.ui.btnGrid.addEventListener('click', () => {
             this.ui.btnGrid.classList.toggle('active');
-            document.dispatchEvent(new CustomEvent('toggleGridLines'));
+            document.dispatchEvent(new CustomEvent(EVENTS.toggleGridLines));
         });
 
         this.ui.btnRotate.addEventListener('click', () => {
-            document.dispatchEvent(new CustomEvent('rotateCanvas'));
+            document.dispatchEvent(new CustomEvent(EVENTS.rotateCanvas));
         });
 
         this.ui.btnMirror.addEventListener('click', () => {
-            document.dispatchEvent(new CustomEvent('mirrorCanvas'));
+            document.dispatchEvent(new CustomEvent(EVENTS.mirrorCanvas));
         });
 
         this.ui.btnBgFill.addEventListener('click', () => {
-            document.dispatchEvent(new CustomEvent('fillBackground'));
+            document.dispatchEvent(new CustomEvent(EVENTS.fillBackground));
         });
 
         this.ui.btnDownload.addEventListener('click', () => {
-            document.dispatchEvent(new CustomEvent('downloadSVG'));
+            document.dispatchEvent(new CustomEvent(EVENTS.downloadSVG));
             utils.showSuccess(this.ui.btnDownload.querySelector('.icon'));
         });
 
         this.ui.btnSave.addEventListener('click', () => {
-            document.dispatchEvent(new CustomEvent('saveState'));
+            document.dispatchEvent(new CustomEvent(EVENTS.saveState));
         });
 
         this.ui.btnDrawX.addEventListener('click', () => {
             this.isMirrorX = !this.isMirrorX;
             this.ui.btnDrawX.classList.toggle('active', this.isMirrorX);
-            document.dispatchEvent(new CustomEvent('toggleMirrorX', { detail: this.isMirrorX }));
+            document.dispatchEvent(new CustomEvent(EVENTS.toggleMirrorX, { detail: this.isMirrorX }));
         });
 
         this.ui.btnDrawY.addEventListener('click', () => {
             this.isMirrorY = !this.isMirrorY;
             this.ui.btnDrawY.classList.toggle('active', this.isMirrorY);
-            document.dispatchEvent(new CustomEvent('toggleMirrorY', { detail: this.isMirrorY }));
+            document.dispatchEvent(new CustomEvent(EVENTS.toggleMirrorY, { detail: this.isMirrorY }));
         });
 
         this.ui.btnGallery.addEventListener('click', () => {
-            document.dispatchEvent(new CustomEvent('toggleGallery'));
+            document.dispatchEvent(new CustomEvent(EVENTS.toggleGallery));
         });
 
         const startHolding = e => {
@@ -303,13 +325,13 @@ const toolbarManager = {
             clearInterval(this.rapidInterval);
         };
 
-        this.ui.btnUndo.addEventListener('pointerdown', () => startHolding('undoAction'));
+        this.ui.btnUndo.addEventListener('pointerdown', () => startHolding(EVENTS.undoAction));
         this.ui.btnUndo.addEventListener('pointerup', stopHolding);
         this.ui.btnUndo.addEventListener('pointerleave', stopHolding);
         this.ui.btnUndo.addEventListener('pointercancel', stopHolding);
         this.ui.btnUndo.addEventListener('contextmenu', e => e.preventDefault());
 
-        this.ui.btnRedo.addEventListener('pointerdown', () => startHolding('redoAction'));
+        this.ui.btnRedo.addEventListener('pointerdown', () => startHolding(EVENTS.redoAction));
         this.ui.btnRedo.addEventListener('pointerup', stopHolding);
         this.ui.btnRedo.addEventListener('pointerleave', stopHolding);
         this.ui.btnRedo.addEventListener('pointercancel', stopHolding);
@@ -331,12 +353,12 @@ const toolbarManager = {
                 switch (e.key.toLocaleLowerCase()) {
                     case 'z':
                         e.preventDefault();
-                        if (e.shiftKey) document.dispatchEvent(new CustomEvent('redoAction'));
-                        else document.dispatchEvent(new CustomEvent('undoAction'));
+                        if (e.shiftKey) document.dispatchEvent(new CustomEvent(EVENTS.redoAction));
+                        else document.dispatchEvent(new CustomEvent(EVENTS.undoAction));
                         break;
                     case 'y':
                         e.preventDefault();
-                        document.dispatchEvent(new CustomEvent('redoAction'));
+                        document.dispatchEvent(new CustomEvent(EVENTS.redoAction));
                         break;
                     case 's':
                         e.preventDefault();
@@ -376,10 +398,10 @@ const toolbarManager = {
                         if (!saveManager.ui.gallery.classList.contains('close')) this.ui.btnGallery.click();
                         break;
                     case '+':
-                        document.dispatchEvent(new CustomEvent('changeGridSize', { detail: 1 }));
+                        document.dispatchEvent(new CustomEvent(EVENTS.changeGridSize, { detail: 1 }));
                         break;
                     case '-':
-                        document.dispatchEvent(new CustomEvent('changeGridSize', { detail: -1 }));
+                        document.dispatchEvent(new CustomEvent(EVENTS.changeGridSize, { detail: -1 }));
                         break;
                 }
             }
@@ -463,8 +485,8 @@ const saveManager = {
     },
 
     bindEvents: function () {
-        document.addEventListener('saveState', () => this.save());
-        document.addEventListener('toggleGallery', () => this.toggleGallery());
+        document.addEventListener(EVENTS.saveState, () => this.save());
+        document.addEventListener(EVENTS.toggleGallery, () => this.toggleGallery());
     },
 
     save: function () {
@@ -551,7 +573,7 @@ const saveManager = {
 
         preview.addEventListener('click', e => {
             this.toggleGallery();
-            document.dispatchEvent(new CustomEvent('loadState', { detail: state.colorData }));
+            document.dispatchEvent(new CustomEvent(EVENTS.loadState, { detail: state.colorData }));
         });
 
         const dateObject = new Date(state.id);
@@ -595,16 +617,16 @@ const svgManager = {
         this.ui.btnGenerate.addEventListener('click', () => this.showSVGCode());
         this.ui.btnCopy.addEventListener('click', e => this.copyLink());
 
-        document.addEventListener('downloadSVG', () => this.download());
+        document.addEventListener(EVENTS.downloadSVG, () => this.download());
 
         const resetSVGView = () => {
             this.ui.codeWrapper.classList.add('close');
         };
 
-        document.addEventListener('pixelChanged', resetSVGView);
-        document.addEventListener('clearCanvas', resetSVGView);
-        document.addEventListener('canvasRebuilt', resetSVGView);
-        document.addEventListener('gridSizeChanged', resetSVGView);
+        document.addEventListener(EVENTS.pixelChanged, resetSVGView);
+        document.addEventListener(EVENTS.clearCanvas, resetSVGView);
+        document.addEventListener(EVENTS.canvasRebuilt, resetSVGView);
+        document.addEventListener(EVENTS.gridSizeChanged, resetSVGView);
     },
 
     getSVGPreview: function (colorData) {
@@ -786,7 +808,7 @@ const drawManager = {
         });
 
         document.addEventListener('pointerup', e => {
-            if (this.active && this.hasChanged) document.dispatchEvent(new CustomEvent('saveHistory'));
+            if (this.active && this.hasChanged) document.dispatchEvent(new CustomEvent(EVENTS.saveHistory));
             this.active = false;
             this.hasChanged = false;
             this.lastX = null;
@@ -798,16 +820,16 @@ const drawManager = {
             }
         });
 
-        document.addEventListener('gridSizeChanged', () => this.initColorData());
-        document.addEventListener('clearCanvas', () => this.initColorData());
-        document.addEventListener('toggleGridLines', () => this.ui.gridContainer.classList.toggle('grid-active'));
-        document.addEventListener('loadState', e => this.loadFromData(e.detail));
-        document.addEventListener('restoreHistoryState', e => this.loadFromData(e.detail));
-        document.addEventListener('rotateCanvas', () => this.rotate());
-        document.addEventListener('mirrorCanvas', () => this.mirror());
-        document.addEventListener('toggleMirrorX', e => this.ui.gridContainer.classList.toggle('mirror-x', e.detail));
-        document.addEventListener('toggleMirrorY', e => this.ui.gridContainer.classList.toggle('mirror-y', e.detail));
-        document.addEventListener('fillBackground', () => this.fillBackground());
+        document.addEventListener(EVENTS.gridSizeChanged, () => this.initColorData());
+        document.addEventListener(EVENTS.clearCanvas, () => this.initColorData());
+        document.addEventListener(EVENTS.toggleGridLines, () => this.ui.gridContainer.classList.toggle('grid-active'));
+        document.addEventListener(EVENTS.loadState, e => this.loadFromData(e.detail));
+        document.addEventListener(EVENTS.restoreHistoryState, e => this.loadFromData(e.detail));
+        document.addEventListener(EVENTS.rotateCanvas, () => this.rotate());
+        document.addEventListener(EVENTS.mirrorCanvas, () => this.mirror());
+        document.addEventListener(EVENTS.toggleMirrorX, e => this.ui.gridContainer.classList.toggle('mirror-x', e.detail));
+        document.addEventListener(EVENTS.toggleMirrorY, e => this.ui.gridContainer.classList.toggle('mirror-y', e.detail));
+        document.addEventListener(EVENTS.fillBackground, () => this.fillBackground());
     },
 
     applyTool: function (x, y, toolName) {
@@ -857,7 +879,7 @@ const drawManager = {
                 }
             }
         }
-        document.dispatchEvent(new CustomEvent('canvasRebuilt', { detail: this.colorData }));
+        document.dispatchEvent(new CustomEvent(EVENTS.canvasRebuilt, { detail: this.colorData }));
     },
 
     drawLine: function (x0, y0, x1, y1) {
@@ -967,7 +989,7 @@ const drawManager = {
                 }
             }
         }
-        document.dispatchEvent(new CustomEvent('canvasRebuilt', { detail: this.colorData }));
+        document.dispatchEvent(new CustomEvent(EVENTS.canvasRebuilt, { detail: this.colorData }));
     },
 
     fillBackground: function () {
@@ -987,7 +1009,7 @@ const drawManager = {
         }
         if (hasChanged) {
             this.loadFromData(newColorData);
-            document.dispatchEvent(new CustomEvent('saveHistory'));
+            document.dispatchEvent(new CustomEvent(EVENTS.saveHistory));
         }
     },
 
@@ -1019,7 +1041,7 @@ const drawManager = {
         if (this.colorData[row][column] !== compressedColor) {
             this.colorData[row][column] = compressedColor;
             this.hasChanged = true;
-            document.dispatchEvent(new CustomEvent('pixelChanged', { detail: { row, column, color: compressedColor } }));
+            document.dispatchEvent(new CustomEvent(EVENTS.pixelChanged, { detail: { row, column, color: compressedColor } }));
             return true;
         }
         return false;
@@ -1034,13 +1056,13 @@ const drawManager = {
             }
         }
         this.loadFromData(newColorData);
-        document.dispatchEvent(new CustomEvent('saveHistory'));
+        document.dispatchEvent(new CustomEvent(EVENTS.saveHistory));
     },
 
     mirror: function () {
         const newColorData = this.colorData.map(row => [...row].reverse());
         this.loadFromData(newColorData);
-        document.dispatchEvent(new CustomEvent('saveHistory'));
+        document.dispatchEvent(new CustomEvent(EVENTS.saveHistory));
     },
 };
 
@@ -1056,19 +1078,19 @@ const historyManager = {
     },
 
     bindEvents: function () {
-        document.addEventListener('undoAction', () => this.undo());
-        document.addEventListener('redoAction', () => this.redo());
-        document.addEventListener('saveHistory', () => this.saveState());
+        document.addEventListener(EVENTS.undoAction, () => this.undo());
+        document.addEventListener(EVENTS.redoAction, () => this.redo());
+        document.addEventListener(EVENTS.saveHistory, () => this.saveState());
 
-        document.addEventListener('clearCanvas', () => {
+        document.addEventListener(EVENTS.clearCanvas, () => {
             setTimeout(() => this.saveState(), 10);
         });
 
-        document.addEventListener('gridSizeChanged', () => {
+        document.addEventListener(EVENTS.gridSizeChanged, () => {
             setTimeout(() => this.saveState(), 10);
         });
 
-        document.addEventListener('loadState', () => this.resetHistory());
+        document.addEventListener(EVENTS.loadState, () => this.resetHistory());
     },
 
     saveState: function () {
@@ -1087,7 +1109,7 @@ const historyManager = {
         this.redoStack.push(currentState);
 
         const previousState = this.undoStack[this.undoStack.length - 1];
-        document.dispatchEvent(new CustomEvent('restoreHistoryState', { detail: previousState }));
+        document.dispatchEvent(new CustomEvent(EVENTS.restoreHistoryState, { detail: previousState }));
     },
 
     redo: function () {
@@ -1095,7 +1117,7 @@ const historyManager = {
 
         const nextState = this.redoStack.pop();
         this.undoStack.push(nextState);
-        document.dispatchEvent(new CustomEvent('restoreHistoryState', { detail: nextState }));
+        document.dispatchEvent(new CustomEvent(EVENTS.restoreHistoryState, { detail: nextState }));
     },
 
     resetHistory: function () {
