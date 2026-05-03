@@ -36,17 +36,18 @@ const EVENTS = {
 const utils = {
     _timers: new WeakMap(),
     compressColor: function (hex) {
-        if (!hex || hex === '') return '';
+        if (typeof hex !== 'string' || hex === '') return '';
         if (hex.length === 7 && hex[1] === hex[2] && hex[3] === hex[4] && hex[5] === hex[6]) {
             return '#' + hex[1] + hex[3] + hex[5];
         }
         return hex;
     },
     decompressColor: function (hex) {
-        if (!hex || hex === '') return '';
+        if (typeof hex !== 'string' || hex === '') return '';
         return hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, (m, r, g, b) => '#' + r + r + g + g + b + b);
     },
     hexToRGB: function (hex) {
+        if (typeof hex !== 'string' || hex === '') return { r: 0, g: 0, b: 0 };
         const decompressedHex = this.decompressColor(hex).replace(/^#/, '');
         if (decompressedHex.length !== 6) return { r: 0, g: 0, b: 0 };
         return {
