@@ -292,6 +292,7 @@ const toolbarManager = {
 
         this.ui.btnSave.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent(EVENTS.saveState));
+            utils.showSuccess(this.ui.btnSave.querySelector('.icon'));
         });
 
         this.ui.btnDrawX.addEventListener('click', () => {
@@ -513,7 +514,6 @@ const saveManager = {
         }
 
         localStorage.setItem('colorData', JSON.stringify(this.colorStates));
-        utils.showSuccess(toolbarManager.ui.btnSave.querySelector('.icon'));
 
         if (!this.ui.gallery.classList.contains('close')) {
             this.renderGallery();
