@@ -774,6 +774,7 @@ const drawManager = {
     colorData: null,
     animationFrameId: null,
     latestPointerEvent: null,
+    domCache: [],
 
     init: function () {
         this.cacheDOM();
@@ -791,8 +792,36 @@ const drawManager = {
         );
     },
 
+    buildDOMCache: function () {
+        const size = gridSizeManager.getGridSize();
+        this.domCache = new Array(size);
+        const rows = this.ui.gridContainer.children;
+        for (let y = 0; y < size; y++) {
+            this.domCache[y] = Array.from(rows[y].children);
+        }
+    },
+
     getColorData: function () {
         return this.colorData;
+    },
+
+    stopDrawing: function () {
+        if (!this.active) return;
+        if (this.hasChanged) document.dispatchEvent(new CustomEvent(EVENTS.saveHistory));
+        if (this.animationFrameId) {
+            cancelAnimationFrame(this.animationFrameId);
+            this.animationFrameId = null;
+        }
+
+        this.active = false;
+        this.hasChanged = false;
+        this.lastX = null;
+        this.lastY = null;
+        this.dragSnapshot = null;
+        if (this.lastTool) {
+            toolbarManager.setActiveTool(this.lastTool);
+            this.lastTool = null;
+        }
     },
 
     bindEvents: function () {
@@ -800,10 +829,11 @@ const drawManager = {
 
         this.ui.gridContainer.addEventListener('pointerdown', e => {
             if (!e.target.hasAttribute('data-column')) return;
-
+            e.preventDefault();
+            if (this.active) return;
             if (e.target.hasPointerCapture(e.pointerId)) e.target.releasePointerCapture(e.pointerId);
             if (e.button === 2) {
-                this.lastTool = toolbarManager.getActiveTool();
+                if (!this.lastTool) this.lastTool = toolbarManager.getActiveTool();
                 const newTool = this.lastTool === 'erase' ? 'draw' : 'erase';
                 toolbarManager.setActiveTool(newTool);
             }
@@ -824,46 +854,29 @@ const drawManager = {
         });
 
         this.ui.gridContainer.addEventListener('pointermove', e => {
-            if (!this.active || !e.target.hasAttribute('data-column')) return;
+            if (!this.active) return;
+            if (e.buttons === 0) {
+                this.stopDrawing();
+                return;
+            }
+            if (!e.target.hasAttribute('data-column')) return;
 
             this.latestPointerEvent = e;
             if (!this.animationFrameId) {
                 this.animationFrameId = requestAnimationFrame(() => this.processPointerMove());
             }
-            const currentX = parseInt(e.target.dataset.column, 10);
-            const currentY = parseInt(e.target.dataset.row, 10);
-            const activeTool = toolbarManager.getActiveTool();
-            if (this.lastX === currentX && this.lastY === currentY) return;
-
-            if (activeTool === 'move') {
-                const dx = currentX - this.dragStartX;
-                const dy = currentY - this.dragStartY;
-                this.move(dx, dy);
-            } else if (activeTool === 'fill') {
-                this.fill(e.target);
-            } else {
-                this.drawLine(this.lastX, this.lastY, currentX, currentY);
-            }
-
-            this.lastX = currentX;
-            this.lastY = currentY;
         });
 
-        document.addEventListener('pointerup', e => {
-            if (this.active && this.hasChanged) document.dispatchEvent(new CustomEvent(EVENTS.saveHistory));
-            if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
-            this.active = false;
-            this.hasChanged = false;
-            this.lastX = null;
-            this.lastY = null;
-            this.dragSnapshot = null;
-            if (this.lastTool) {
-                toolbarManager.setActiveTool(this.lastTool);
-                this.lastTool = null;
-            }
-        });
+        document.addEventListener('pointerup', e => this.stopDrawing());
+        document.addEventListener('pointercancel', e => this.stopDrawing());
+        document.addEventListener('lostpointercapture', e => this.stopDrawing());
 
-        document.addEventListener(EVENTS.gridSizeChanged, () => this.initColorData());
+        document.addEventListener(EVENTS.gridSizeChanged, () => {
+            this.initColorData();
+            this.buildDOMCache();
+        });
+        document.addEventListener(EVENTS.canvasRebuilt, () => this.buildDOMCache());
+        setTimeout(() => this.buildDOMCache(), 0);
         document.addEventListener(EVENTS.clearCanvas, () => {
             this.initColorData();
             this.clearDOMColors();
@@ -905,8 +918,8 @@ const drawManager = {
 
     applyTool: function (x, y, toolName) {
         if (toolName === 'picker') {
-            const rowEl = this.ui.gridContainer.children[y];
-            if (rowEl && rowEl.children[x]) this[toolName](rowEl.children[x]);
+            const cell = this.domCache[y] && this.domCache[y][x];
+            if (cell) this[toolName](cell)
             return;
         }
 
@@ -921,11 +934,8 @@ const drawManager = {
 
         coords.forEach(coord => {
             const [cx, cy] = coord.split(',').map(Number);
-            const rowEl = this.ui.gridContainer.children[cy];
-            if (rowEl) {
-                const cell = rowEl.children[cx];
-                if (cell) this[toolName](cell);
-            }
+            const cell = this.domCache[cy] && this.domCache[cy][cx];
+            if (cell) this[toolName](cell);
         });
     },
 
@@ -936,6 +946,7 @@ const drawManager = {
             gridSizeManager.gridSize = newSize;
             gridSizeManager.ui.gridSizeSpan.textContent = `${newSize} x ${newSize}`;
             gridSizeManager.createGrid();
+            this.buildDOMCache();
         }
 
         this.colorData = newColorData.map(row => [...row]);
@@ -943,10 +954,9 @@ const drawManager = {
         for (let row = 0; row < newSize; row++) {
             for (let column = 0; column < newSize; column++) {
                 const color = this.colorData[row][column];
-                const rowEl = this.ui.gridContainer.children[row];
-                if (rowEl) {
-                    const cell = rowEl.children[column];
-                    if (cell) cell.style.backgroundColor = color;
+                const cell = this.domCache[row] && this.domCache[row][column];
+                if (cell) {
+                    cell.style.backgroundColor = color;
                 }
             }
         }
@@ -954,8 +964,14 @@ const drawManager = {
     },
 
     clearDOMColors: function () {
-        const cells = this.ui.gridContainer.querySelectorAll('.grid-cell');
-        cells.forEach(cell => cell.style.backgroundColor = '');
+        const size = gridSizeManager.getGridSize();
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                if (this.domCache[y] && this.domCache[y][x]) {
+                    this.domCache[y][x].style.backgroundColor = '';
+                }
+            }
+        }
     },
 
     drawLine: function (x0, y0, x1, y1) {
@@ -1055,11 +1071,9 @@ const drawManager = {
             if (this.colorData[y][x] === targetColor) {
                 this.colorData[y][x] = replacementColor;
 
-                const rowEl = this.ui.gridContainer.children[y];
-                if (rowEl) {
-                    const cellEl = rowEl.children[x];
-                    if (cellEl) cellEl.style.backgroundColor = replacementColor;
-                }
+                const cell = this.domCache[y] && this.domCache[y][x];
+                if (cell) cell.style.backgroundColor = replacementColor;
+
                 for (let i = 0; i < directions.length; i++) {
                     stack.push([x + directions[i][0], y + directions[i][1]]);
                 }
