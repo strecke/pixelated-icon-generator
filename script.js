@@ -907,7 +907,7 @@ const drawManager = {
             const dy = currentY - this.dragStartY;
             this.move(dx, dy);
         } else if (activeTool === 'fill') {
-            this.fill(target);
+            this.fill(currentX, currentY);
         } else {
             this.drawLine(this.lastX, this.lastY, currentX, currentY);
         }
@@ -918,25 +918,20 @@ const drawManager = {
 
     applyTool: function (x, y, toolName) {
         if (toolName === 'picker') {
-            const cell = this.domCache[y] && this.domCache[y][x];
-            if (cell) this[toolName](cell)
+            this.picker(x, y);
             return;
         }
 
         const size = gridSizeManager.getGridSize();
-        const coords = new Set([`${x},${y}`]);
+        const mirrorX = size - 1 - x;
+        const mirrorY = size - 1 - y;
+        this[toolName](x, y);
 
-        if (toolbarManager.isMirrorX) coords.add(`${x},${size - 1 - y}`);
-        if (toolbarManager.isMirrorY) coords.add(`${size - 1 - x},${y}`);
-        if (toolbarManager.isMirrorX && toolbarManager.isMirrorY) {
-            coords.add(`${size - 1 - x},${size - 1 - y}`);
+        if (toolbarManager.isMirrorX && mirrorY !== y) this[toolName](x, mirrorY);
+        if (toolbarManager.isMirrorY && mirrorX !== x) this[toolName](mirrorX, y);
+        if (toolbarManager.isMirrorX && toolbarManager.isMirrorY && mirrorX !== x && mirrorY !== y) {
+            this[toolName](mirrorX, mirrorY);
         }
-
-        coords.forEach(coord => {
-            const [cx, cy] = coord.split(',').map(Number);
-            const cell = this.domCache[cy] && this.domCache[cy][cx];
-            if (cell) this[toolName](cell);
-        });
     },
 
     loadFromData: function (newColorData) {
@@ -996,39 +991,43 @@ const drawManager = {
         }
     },
 
-    draw: function (target) {
+    draw: function (x, y) {
         const pickedColor = toolbarManager.getColor();
-        if (this.updateColorData(target, pickedColor)) {
-            target.style.backgroundColor = pickedColor;
+        if (this.updateColorData(x, y, pickedColor)) {
+            if (this.domCache[y] && this.domCache[y][x]) {
+                this.domCache[y][x].style.backgroundColor = pickedColor;
+            }
         }
     },
 
-    darken: function (target) {
-        const row = parseInt(target.dataset.row, 10);
-        const column = parseInt(target.dataset.column, 10);
-        const currentColor = this.colorData[row][column];
+    darken: function (x, y) {
+        const currentColor = this.colorData[y][x];
 
         if (!currentColor || currentColor === '#000' || currentColor === '#000000') return;
 
         const newColor = utils.adjustColor(currentColor, -CONFIG.shadeStep);
 
-        if (this.updateColorData(target, newColor)) target.style.backgroundColor = newColor;
+        if (this.updateColorData(x, y, newColor)) {
+            if (this.domCache[y] && this.domCache[y][x]) this.domCache[y][x].style.backgroundColor = newColor;
+        }
     },
 
-    brighten: function (target) {
-        const row = parseInt(target.dataset.row, 10);
-        const column = parseInt(target.dataset.column, 10);
-        const currentColor = this.colorData[row][column];
+    brighten: function (x, y) {
+        const currentColor = this.colorData[y][x];
 
         if (!currentColor || currentColor === '#fff' || currentColor === '#ffffff') return;
 
         const newColor = utils.adjustColor(currentColor, CONFIG.shadeStep);
 
-        if (this.updateColorData(target, newColor)) target.style.backgroundColor = newColor;
+        if (this.updateColorData(x, y, newColor)) {
+            if (this.domCache[y] && this.domCache[y][x]) this.domCache[y][x].style.backgroundColor = newColor;
+        }
     },
 
-    erase: function (target) {
-        if (this.updateColorData(target)) target.style.backgroundColor = '';
+    erase: function (x, y) {
+        if (this.updateColorData(x, y, '')) {
+            if (this.domCache[y] && this.domCache[y][x]) this.domCache[y][x].style.backgroundColor = '';
+        }
     },
 
     move: function (dx, dy) {
@@ -1050,9 +1049,7 @@ const drawManager = {
         this.loadFromData(newColorData);
     },
 
-    fill: function (target) {
-        const startX = parseInt(target.dataset.column, 10);
-        const startY = parseInt(target.dataset.row, 10);
+    fill: function (startX, startY) {
         const targetColor = this.colorData[startY][startX];
         const replacementColor = toolbarManager.getColor();
         if (targetColor === replacementColor) return;
@@ -1060,7 +1057,6 @@ const drawManager = {
         this.hasChanged = true;
         const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
         const stack = [[startX, startY]];
-
         const gridSize = gridSizeManager.getGridSize();
 
         while (stack.length > 0) {
@@ -1103,18 +1099,16 @@ const drawManager = {
         }
     },
 
-    rainbow: function (target) {
+    rainbow: function (x, y) {
         const randomR = Math.floor(Math.random() * 256);
         const randomG = Math.floor(Math.random() * 256);
         const randomB = Math.floor(Math.random() * 256);
         toolbarManager.onColorChange(utils.rgbToHex(randomR, randomG, randomB), true);
-        this.draw(target);
+        this.draw(x, y);
     },
 
-    picker: function (target) {
-        const row = parseInt(target.dataset.row, 10);
-        const column = parseInt(target.dataset.column, 10);
-        let color = this.colorData[row][column];
+    picker: function (x, y) {
+        let color = this.colorData[y][x];
         if (color === '') color = '#ffffff';
         const fullHex = utils.decompressColor(color);
         toolbarManager.onColorChange(fullHex);
@@ -1123,15 +1117,13 @@ const drawManager = {
         else toolbarManager.setActiveTool('draw');
     },
 
-    updateColorData: function (target, color = '') {
-        const row = parseInt(target.dataset.row, 10);
-        const column = parseInt(target.dataset.column, 10);
+    updateColorData: function (x, y, color = '') {
         const compressedColor = utils.compressColor(color);
 
-        if (this.colorData[row][column] !== compressedColor) {
-            this.colorData[row][column] = compressedColor;
+        if (this.colorData[y][x] !== compressedColor) {
+            this.colorData[y][x] = compressedColor;
             this.hasChanged = true;
-            document.dispatchEvent(new CustomEvent(EVENTS.pixelChanged, { detail: { row, column, color: compressedColor } }));
+            document.dispatchEvent(new CustomEvent(EVENTS.pixelChanged, { detail: { row: y, column: x, color: compressedColor } }));
             return true;
         }
         return false;
