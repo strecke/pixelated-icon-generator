@@ -107,6 +107,7 @@ const gridSizeManager = {
     cacheDOM: function () {
         this.ui.btnPlus = document.querySelector('.grid-size-container .grid-size-plus');
         this.ui.btnMinus = document.querySelector('.grid-size-container .grid-size-minus');
+        this.ui.btnScale = document.querySelector('.grid-size-container .grid-size-scale');
         this.ui.gridContainer = document.querySelector('.grid-container');
         this.ui.gridSizeSpan = document.querySelector('.grid-size-container .grid-size');
     },
@@ -162,11 +163,23 @@ const gridSizeManager = {
                 document.dispatchEvent(new CustomEvent(EVENTS.gridSizeChanged, { detail: this.gridSize }));
             }
         });
+
+        this.ui.btnScale.addEventListener('click', () => this.ui.btnScale.classList.toggle('active'));
     },
 
     updateGridSize: function (factor = 0) {
-        if (this.gridSize + factor < CONFIG.minGridSize || this.gridSize + factor > CONFIG.maxGridSize) return;
-        this.gridSize += factor;
+        const isScale = this.ui.btnScale.classList.contains('active');
+        let newSize = this.gridSize;
+
+        if (isScale && Math.abs(factor) === 1) {
+            if (factor > 0) newSize = this.gridSize * 2;
+            else if (factor < 0) newSize = Math.floor(this.gridSize / 2);
+        } else {
+            newSize = this.gridSize + factor;
+        }
+        if (newSize < CONFIG.minGridSize || newSize > CONFIG.maxGridSize) return;
+
+        this.gridSize = newSize;
         this.ui.gridSizeSpan.textContent = `${this.gridSize} x ${this.gridSize}`;
     },
 
@@ -441,6 +454,7 @@ const toolbarManager = {
                     case '-':
                         document.dispatchEvent(new CustomEvent(EVENTS.changeGridSize, { detail: -1 }));
                         break;
+                    case 's': gridSizeManager.ui.btnScale.click(); break;
                 }
             }
         });
@@ -1021,11 +1035,31 @@ const drawManager = {
         document.addEventListener(EVENTS.gridSizeChanged, () => {
             const newSize = gridSizeManager.getGridSize();
             const oldData = this.colorData;
+            const oldSize = oldData.length;
+            const isScale = gridSizeManager.ui.btnScale.classList.contains('active');
+
             this.colorData = Array.from({ length: newSize }, (_, y) =>
                 Array.from({ length: newSize }, (_, x) => {
-                    return (oldData[y] && oldData[y][x]) ? oldData[y][x] : '';
+                    if (isScale) {
+                        const oldX = Math.floor(x * (oldSize / newSize));
+                        const oldY = Math.floor(y * (oldSize / newSize));
+                        return (oldData[oldY] && oldData[oldY][oldX]) ? oldData[oldY][oldX] : '';
+
+                    } else {
+                        return (oldData[y] && oldData[y][x]) ? oldData[y][x] : '';
+                    }
                 }));
+
             this.buildDOMCache();
+
+            for (let y = 0; y < newSize; y++) {
+                for (let x = 0; x < newSize; x++) {
+                    const cell = this.domCache[y] && this.domCache[y][x];
+                    if (cell) {
+                        cell.style.backgroundColor = this.colorData[y][x];
+                    }
+                }
+            }
         });
 
         document.addEventListener(EVENTS.canvasRebuilt, () => this.buildDOMCache());
