@@ -9,6 +9,7 @@ const CONFIG = {
     showSuccessDuration: 2000,
     shadeStep: 10,
     maxColorHistory: 6,
+    scrollTolerance: 3,
 };
 
 const EVENTS = {
@@ -919,7 +920,7 @@ const drawManager = {
             this.initColorData();
             this.clearDOMColors();
         });
-        
+
         document.addEventListener(EVENTS.toggleGridLines, () => this.ui.gridContainer.classList.toggle('grid-active'));
         document.addEventListener(EVENTS.loadState, e => this.loadFromData(e.detail));
         document.addEventListener(EVENTS.restoreHistoryState, e => this.loadFromData(e.detail));
@@ -1275,7 +1276,7 @@ const scrollManager = {
             e.preventDefault();
             const x = e.pageX - slider.offsetLeft;
             const walk = x - startX;
-            if (Math.abs(walk) > 3) hasDragged = true;
+            if (Math.abs(walk) > CONFIG.scrollTolerance) hasDragged = true;
             slider.scrollLeft = scrollLeft - walk;
         });
 
@@ -1298,21 +1299,23 @@ const scrollManager = {
 
         const updateButtons = () => {
             const maxScroll = slider.scrollWidth - slider.clientWidth;
-            if (btnLeft) btnLeft.style.display = slider.scrollLeft > 3 ? 'flex' : 'none';
-            if (btnRight) btnRight.style.display = slider.scrollLeft < maxScroll - 3 ? 'flex' : 'none';
+            if (btnLeft) btnLeft.style.display = slider.scrollLeft > CONFIG.scrollTolerance ? 'flex' : 'none';
+            if (btnRight) btnRight.style.display = slider.scrollLeft < maxScroll - CONFIG.scrollTolerance ? 'flex' : 'none';
         };
 
-        if (btnLeft) {
-            btnLeft.addEventListener('click', () => {
-                slider.scrollBy({ left: -150, behavior: 'smooth' });
-            });
-        }
+        const scroll = (factor) => {
+            const { clientWidth, scrollWidth, scrollLeft } = slider;
+            const maxScroll = scrollWidth - clientWidth;
+            const scrollAmount = Math.round(clientWidth * 0.8);
+            const snapThreshold = Math.round(clientWidth * 0.18);
+            const distanceToEdge = factor > 0 ? maxScroll - scrollLeft : scrollLeft;
+            const remainingAfterScroll = distanceToEdge - scrollAmount;
+            const scrollDist = remainingAfterScroll <= snapThreshold ? distanceToEdge : scrollAmount;
+            slider.scrollBy({ left: scrollDist * factor, behavior: 'smooth' });
+        };
 
-        if (btnRight) {
-            btnRight.addEventListener('click', () => {
-                slider.scrollBy({ left: 150, behavior: 'smooth' });
-            });
-        }
+        if (btnLeft) btnLeft.addEventListener('click', () => scroll(-1));
+        if (btnRight) btnRight.addEventListener('click', () => scroll(1));
 
         slider.addEventListener('scroll', updateButtons);
         window.addEventListener('resize', updateButtons);
