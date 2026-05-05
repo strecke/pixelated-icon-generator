@@ -10,6 +10,8 @@ const CONFIG = {
     shadeStep: 10,
     maxColorHistory: 6,
     scrollTolerance: 3,
+    allowedFileTypes: '.svg, .png, .jpg, .jpeg, .webp',
+    allowedRegexFileTypes: /image\/(svg\+xml|png|jpeg|webp)/i,
 };
 
 const EVENTS = {
@@ -270,6 +272,7 @@ const toolbarManager = {
         this.ui.btnMove = this.ui.toolbar.querySelector('button.move');
         this.ui.btnBgFill = this.ui.toolbar.querySelector('button.bg-fill');
         this.ui.btnGenerate = this.ui.actionbar.querySelector('button.generate-svg');
+        this.ui.btnUpload = this.ui.actionbar.querySelector('button.upload');
         this.ui.helpModal = document.getElementById('help-modal');
     },
 
@@ -398,11 +401,16 @@ const toolbarManager = {
                         e.preventDefault();
                         this.ui.btnDownload.click();
                         break;
+                    case 'u':
+                        e.preventDefault();
+                        this.ui.btnUpload.click();
+                        break;
                     case 'g':
                         e.preventDefault();
                         this.ui.btnGallery.click();
                         break;
                     case 'c':
+                        e.preventDefault();
                         this.ui.btnGenerate.click();
                         break;
                 }
@@ -646,11 +654,21 @@ const svgManager = {
         this.ui.svgOutput = this.ui.svgContainer.querySelector('.svg-output');
         this.ui.btnCopy = this.ui.svgContainer.querySelector('button.copy-svg');
         this.ui.btnCopyIcon = this.ui.btnCopy.querySelector('span');
+        this.ui.fileInput = document.createElement('input');
+        this.ui.fileInput.type = 'file';
+        this.ui.fileInput.accept = CONFIG.allowedFileTypes;
+        this.ui.btnUpload = toolbarManager.ui.btnUpload;
     },
 
     bindEvents: function () {
         this.ui.btnGenerate.addEventListener('click', () => this.showSVGCode());
         this.ui.btnCopy.addEventListener('click', e => this.copyLink());
+        this.ui.btnUpload.addEventListener('click', () => this.ui.fileInput.click());
+        this.ui.fileInput.addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) this.processFile(file);
+            e.target.value = '';
+        });
 
         document.addEventListener(EVENTS.downloadSVG, () => this.download());
 
@@ -662,6 +680,102 @@ const svgManager = {
         document.addEventListener(EVENTS.clearCanvas, resetSVGView);
         document.addEventListener(EVENTS.canvasRebuilt, resetSVGView);
         document.addEventListener(EVENTS.gridSizeChanged, resetSVGView);
+
+        ['dragover', 'drop'].forEach(eventName => {
+            window.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        document.addEventListener('dragenter', e => {
+            document.body.classList.add('drag-active');
+        });
+
+        document.addEventListener('dragleave', e => {
+            if (!e.relatedTarget) document.body.classList.remove('drag-active');
+        });
+
+        document.addEventListener('drop', e => {
+            document.body.classList.remove('drag-active');
+            const file = e.dataTransfer.files[0];
+            if (file && CONFIG.allowedRegexFileTypes.test(file.type)) {
+                this.processFile(file);
+            }
+        });
+    },
+
+    processFile: function (file) {
+        if (!file || !CONFIG.allowedRegexFileTypes.test(file.type)) return;
+        // check whether the SVG was created using this tool
+        if (file.type === 'image/svg+xml') {
+            const reader = new FileReader();
+            reader.onload = event => {
+                let detectedSize = null;
+                try {
+                    const doc = new DOMParser().parseFromString(event.target.result, 'image/svg+xml');
+                    const svgElement = doc.querySelector('svg');
+
+                    if (svgElement && svgElement.getAttribute('data-pixel-art') === 'true') {
+                        const viewBox = svgElement.getAttribute('viewBox');
+                        if (viewBox) {
+                            const [, , w, h] = viewBox.split(' ').map(Number);
+                            if (w === h && w >= CONFIG.minGridSize && w <= CONFIG.maxGridSize) {
+                                detectedSize = w;
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('SVG Import Error:', error);
+                }
+                const url = URL.createObjectURL(file);
+                this.rasterizeImageToGrid(url, detectedSize);
+            }
+            reader.readAsText(file);
+        } else {
+            const url = URL.createObjectURL(file);
+            this.rasterizeImageToGrid(url, null);
+        }
+    },
+
+    rasterizeImageToGrid: function (imageUrl, detectedSize) {
+        const img = new Image();
+        img.onload = () => {
+            const size = detectedSize ? detectedSize : gridSizeManager.getGridSize();
+
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d', { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0, size, size);
+            const imageData = ctx.getImageData(0, 0, size, size).data;
+
+            const newColorData = Array.from({ length: size }, () => new Array(size).fill(''));
+            let dataIndex = 0;
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    const r = imageData[dataIndex];
+                    const g = imageData[dataIndex + 1];
+                    const b = imageData[dataIndex + 2];
+                    const alpha = imageData[dataIndex + 3];
+
+                    if (alpha > 10) {
+                        newColorData[y][x] = utils.compressColor(utils.rgbToHex(r, g, b));
+                    }
+                    dataIndex += 4;
+                }
+            }
+
+            document.dispatchEvent(new CustomEvent(EVENTS.loadState, { detail: newColorData }));
+
+            utils.showSuccess(this.ui.btnUpload.querySelector('.icon'));
+            URL.revokeObjectURL(imageUrl);
+        };
+
+        img.onerror = () => {
+            console.error('Error loading the image.');
+        }
+        img.src = imageUrl;
     },
 
     getSVGPreview: function (colorData) {
@@ -670,6 +784,7 @@ const svgManager = {
         svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         svg.setAttribute('viewBox', `0 0 ${gridSize} ${gridSize}`);
         svg.setAttribute('shape-rendering', 'crispEdges');
+        svg.setAttribute('data-pixel-art', 'true');
 
         const rectsByColor = {};
 
@@ -711,7 +826,7 @@ const svgManager = {
         for (const [color, rects] of Object.entries(rectsByColor)) {
             let pathData = '';
             for (const r of rects) {
-                pathData += `M${r.x} ${r.y} h${r.w} v${r.h} h-${r.w} Z `;
+                pathData += `M${r.x} ${r.y}h${r.w}v${r.h}h-${r.w}Z `;
             }
 
             const path = document.createElementNS(this.svgns, 'path');
