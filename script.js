@@ -981,7 +981,10 @@ const drawManager = {
             this.gridRect = this.ui.gridContainer.getBoundingClientRect();
 
             this.ui.gridContainer.setPointerCapture(e.pointerId);
-            if (e.button === 2) {
+            if (e.button === 1) {
+                if (!this.lastTool) this.lastTool = toolbarManager.getActiveTool();
+                toolbarManager.setActiveTool('move');
+            } else if (e.button === 2) {
                 if (!this.lastTool) this.lastTool = toolbarManager.getActiveTool();
                 const newTool = this.lastTool === 'erase' ? 'draw' : 'erase';
                 toolbarManager.setActiveTool(newTool);
