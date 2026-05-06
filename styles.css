@@ -145,6 +145,7 @@ input[type="color"]::-moz-color-swatch {
     height: 2px;
     width: 100%;
     grid-column: span 2;
+    -webkit-user-select: none;
     user-select: none;
 }
 
@@ -432,6 +433,8 @@ input[type="color"]::-moz-color-swatch {
     display: flex;
     gap: 10px;
     align-items: center;
+    width: -webkit-fill-available;
+    margin-left: 90px;
 }
 
 .grid-size-container button {
@@ -443,6 +446,105 @@ input[type="color"]::-moz-color-swatch {
 .grid-size-container .grid-size {
     text-align: center;
     width: 80px;
+}
+
+.grid-size-container .hint-show {
+    margin-right: auto;
+    transform: translateY(0) scale(1);
+    opacity: 1;
+    visibility: hidden;
+    position: relative;
+}
+
+.grid-size-container .hint-show::before,
+.grid-size-container .hint-show::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 4px;
+    height: 5px;
+    border-radius: 50%;
+    border: 0.5px solid #000;
+    box-sizing: border-box;
+    top: 15%;
+    background:
+        radial-gradient(circle, #000 30%, #fff 35%);
+    z-index: 10;
+}
+
+.grid-size-container .hint-show::before {
+    left: 25%;
+    transform: translate(3px, 2px) rotateZ(45deg);
+}
+
+.grid-size-container .hint-show::after {
+    left: 45%;
+    transform: translate(1px, 4px) rotateZ(45deg);
+}
+
+.grid-size-container .hint-show.ready {
+    visibility: visible;
+    transition: transform 0.3s ease, opacity 0.3s ease, visibility 0.3s;
+}
+
+.grid-size-container .hint-show.hide-down {
+    transform: translateY(30px) scale(0.5);
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* hint-container */
+.hint-container {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.85rem;
+    opacity: 0.5;
+    height: 50px;
+    margin-left: 90px;
+    transition: opacity 0.3s ease;
+}
+
+.hint-container:hover {
+    opacity: 1;
+}
+
+.hint-text {
+    margin: 20px 0;
+    transition: opacity 0.3s ease;
+    line-height: 1.3;
+}
+
+.hint-text::after {
+    content: '|';
+    margin-left: 2px;
+    font-size: 15px;
+    animation: blink 1.2s step-end infinite;
+}
+
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+.hint-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    box-shadow: none;
+    height: 25px;
+    width: 25px;
+    padding: 0;
+    margin: 0;
+    line-height: 0;
+    flex-shrink: 0;
 }
 
 /* svg output */
@@ -762,6 +864,14 @@ input[type="color"]::-moz-color-swatch {
     background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzAwMDAwMCIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0xODQuNDksMTM2LjQ5bC04MCw4MGExMiwxMiwwLDAsMS0xNy0xN0wxNTksMTI4LDg3LjUxLDU2LjQ5YTEyLDEyLDAsMSwxLDE3LTE3bDgwLDgwQTEyLDEyLDAsMCwxLDE4NC40OSwxMzYuNDlaIj48L3BhdGg+PC9zdmc+');
 }
 
+.icon.icon-close {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzAwMDAwMCIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0yMDguNDksMTkxLjUxYTEyLDEyLDAsMCwxLTE3LDE3TDEyOCwxNDUsNjQuNDksMjA4LjQ5YTEyLDEyLDAsMCwxLTE3LTE3TDExMSwxMjgsNDcuNTEsNjQuNDlhMTIsMTIsMCwwLDEsMTctMTdMMTI4LDExMWw2My41MS02My41MmExMiwxMiwwLDAsMSwxNywxN0wxNDUsMTI4WiI+PC9wYXRoPjwvc3ZnPg==');
+}
+
+.icon.icon-hint {
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgZmlsbD0iIzAwMDAwMCIgdmlld0JveD0iMCAwIDI1NiAyNTYiPjxwYXRoIGQ9Ik0yMTIuNDgsMTM2LjQ5bC04Mi4wNiw4MmE2MCw2MCwwLDAsMS04NC44NS04NC44OGw5OC4xNi05Ny44OWE0MCw0MCwwLDAsMSw1Ni41Niw1Ni41OWwtLjE3LjE2LTk1LjgsOTIuMjJhMTIsMTIsMCwxLDEtMTYuNjQtMTcuM2w5NS43MS05Mi4xMmExNiwxNiwwLDAsMC0yMi43LTIyLjU2TDYyLjUzLDE1MC41N2EzNiwzNiwwLDAsMCw1MC45Myw1MC45MWw4Mi4wNi04MmExMiwxMiwwLDAsMSwxNywxN1oiPjwvcGF0aD48L3N2Zz4=');
+}
+
 /* scrollbar */
 .gallery-container::-webkit-scrollbar,
 .help-modal::-webkit-scrollbar {
@@ -824,7 +934,9 @@ input[type="color"]::-moz-color-swatch {
 
     .header,
     .grid-container,
-    .gallery-container {
+    .gallery-container,
+    .grid-size-container,
+    .hint-container {
         width: 100%;
         max-width: 100%;
         margin: 0;

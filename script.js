@@ -34,6 +34,7 @@ const EVENTS = {
     toggleMirrorY: 'toggleMirrorY',
     toggleGallery: 'toggleGallery',
     canvasRebuilt: 'canvasRebuilt',
+    toggleHints: 'toggleHints'
 }
 
 const utils = {
@@ -455,6 +456,9 @@ const toolbarManager = {
                         document.dispatchEvent(new CustomEvent(EVENTS.changeGridSize, { detail: -1 }));
                         break;
                     case 's': gridSizeManager.ui.btnScale.click(); break;
+                    case 't':
+                        document.dispatchEvent(new CustomEvent(EVENTS.toggleHints));
+                        break;
                 }
             }
         });
@@ -1473,3 +1477,113 @@ const scrollManager = {
 };
 
 scrollManager.init();
+
+const hintManager = {
+    ui: {},
+    tips: [
+        "Pro tip: Hold down Undo ('Ctrl+Z') or Redo ('Ctrl+Y') to travel through time faster.",
+        "Did you know? You can drag & drop PNGs, JPGs, WEBPs or SVGs directly onto the canvas!",
+        "The data-pixel-art='true' attribute allows the viewBox dimensions to be automatically set as the canvas scale.",
+        "Hold down the + or - buttons to rapidly change the grid size.",
+        "Toggle the Scale button ('s') to resize your artwork instead of just the canvas.",
+        "Use keyboard shortcuts like 'Ctrl+Z' (Undo) and 'Ctrl+S' (Save) to speed up your workflow.",
+        "Right-click anywhere on the canvas to quickly swap between the Draw and Erase tools.",
+        "Press 'F' for the Fill tool, or 'P' for the Color Picker. Use keyboard shortcuts to be faster!",
+        "Try the Rainbow tool (press 'R') to draw with a new random color for every pixel.",
+        "Use the Darken ('K') and Brighten ('L') tools to add shading and highlights.",
+        "Press 'X' or 'Y' to toggle symmetry mode and draw mirrored shapes.",
+        "Need to move your art? Select the Move tool ('M') or click your scroll wheel to drag your drawing around.",
+    ],
+    currentIndex: 0,
+    intervalId: null,
+    fadeTimeoutId: null,
+    typewriterTimeoutId: null,
+
+    init: function () {
+        this.cacheDOM();
+        this.bindEvents();
+
+        if (localStorage.getItem('hintsDismissed') !== 'true') {
+            this.ui.hintContainer.style.display = 'flex';
+            this.ui.btnShow.classList.add('hide-down');
+            this.startRotation();
+        }
+        void this.ui.btnShow.offsetHeight;
+        this.ui.btnShow.classList.add('ready');
+    },
+
+    cacheDOM: function () {
+        this.ui.hintContainer = document.querySelector('.hint-container');
+        this.ui.hintText = document.querySelector('.hint-text');
+        this.ui.btnClose = document.querySelector('.hint-close');
+        this.ui.btnShow = document.querySelector('.hint-show');
+    },
+
+    bindEvents: function () {
+        this.ui.btnClose.addEventListener('click', () => this.toggleHints());
+        this.ui.btnShow.addEventListener('click', () => this.toggleHints());
+        document.addEventListener(EVENTS.toggleHints, () => this.toggleHints());
+    },
+
+    toggleHints: function () {
+        if (this.fadeTimeoutId) {
+            clearTimeout(this.fadeTimeoutId);
+            this.fadeTimeoutId = null;
+        }
+        const showHint = localStorage.getItem('hintsDismissed') === 'true';
+        if (showHint) {
+            localStorage.removeItem('hintsDismissed');
+            this.ui.btnShow.classList.add('hide-down');
+            this.ui.hintContainer.style.opacity = '0';
+            this.ui.hintContainer.style.display = 'flex';
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    this.ui.hintContainer.style.opacity = '';
+                });
+            });
+            this.startRotation();
+        } else {
+            localStorage.setItem('hintsDismissed', 'true');
+            this.ui.hintContainer.style.opacity = '0';
+            if (this.intervalId) clearInterval(this.intervalId);
+            if (this.typewriterTimeoutId) clearTimeout(this.typewriterTimeoutId);
+            this.fadeTimeoutId = setTimeout(() => {
+                this.ui.hintContainer.style.display = 'none';
+                this.ui.btnShow.classList.remove('hide-down');
+                this.fadeTimeoutId = null;
+            }, 300);
+        }
+    },
+
+    startRotation: function () {
+        if (this.intervalId) clearInterval(this.intervalId);
+        this.typeText(this.tips[this.currentIndex])
+        this.intervalId = setInterval(() => {
+            this.ui.hintText.style.opacity = '0';
+            setTimeout(() => {
+                this.currentIndex = (this.currentIndex + 1) % this.tips.length;
+                this.ui.hintText.style.opacity = '';
+                this.typeText(this.tips[this.currentIndex])
+            }, 300);
+        }, 10000);
+    },
+
+    typeText: function (fullText) {
+        if (this.typewriterTimeoutId) clearTimeout(this.typewriterTimeoutId);
+        this.ui.hintText.textContent = '';
+        let charIndex = 0;
+        const type = () => {
+            if (charIndex < fullText.length) {
+                this.ui.hintText.textContent += fullText.charAt(charIndex);
+                charIndex++;
+                const randomSpeed = Math.floor(Math.random() * 20) + 20;
+                this.typewriterTimeoutId = setTimeout(type, randomSpeed);
+            } else {
+                this.typewriterTimeoutId = null;
+            }
+        };
+        type();
+    },
+};
+
+hintManager.init();

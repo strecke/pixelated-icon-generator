@@ -118,12 +118,17 @@
         </div>
 
         <div class="grid-size-container">
+            <button class="hint-show" title="Show tips (t)"><span class="icon icon-small icon-hint"></span></button>
             <button class="grid-size-minus" title="Scale Down Grid (-)">–</button>
             <span class="grid-size">16 x 16</span>
             <button class="grid-size-plus" title="Scale Up Grid (+)">+</button>
             <button class="grid-size-scale" title="Scale Canvas (s)"><span
                     class="icon icon-small icon-scale"></span></button>
         </div>
+    </div>
+    <div class="hint-container">
+        <button class="hint-close" title="Dismiss tips (t)"><span class="icon icon-small icon-close"></span></button>
+        <span class="hint-text"></span>
     </div>
 
     <div class="svg-container">
@@ -187,8 +192,7 @@
                 <div class="shortcut-item"><kbd>C</kbd><span class="icon icon-delete"></span><span
                         class="item-text">Clear All</span></div>
 
-                <div class="shortcut-item"><kbd>+</kbd> / <kbd>-</kbd><span
-                        class="item-text">Scale Grid</span></div>
+                <div class="shortcut-item"><kbd>+</kbd> / <kbd>-</kbd><span class="item-text">Scale Grid</span></div>
                 <div class="shortcut-item"><kbd>s</kbd><span class="icon icon-scale"></span><span
                         class="item-text">Scale Canvas</span></div>
 
@@ -204,6 +208,8 @@
                         class="item-text">Download</span></span></div>
                 <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>U</kbd><span class="icon icon-upload"></span><span
                         class="item-text">Upload</span></span></div>
+                <div class="shortcut-item"><kbd>T</kbd><span class="icon icon-hint"></span><span
+                        class="item-text">Toggle tips</span></div>
             </div>
         </div>
     </dialog>
