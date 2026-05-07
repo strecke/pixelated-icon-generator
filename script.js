@@ -289,6 +289,7 @@ const toolbarManager = {
         this.ui.btnUpload = this.ui.actionbar.querySelector('button.upload');
         this.ui.helpModal = document.getElementById('help-modal');
         this.ui.btnWelcome = this.ui.actionbar.querySelector('button.welcome');
+        this.ui.btnCloseModal = this.ui.helpModal.querySelector('.close-modal');
     },
 
     getActiveTool: function () {
@@ -474,6 +475,16 @@ const toolbarManager = {
             ) {
                 this.ui.helpModal.close();
             }
+        });
+
+        this.ui.btnWelcome.addEventListener('click', () => {
+            if (!this.ui.helpModal.open) {
+                this.ui.helpModal.showModal();
+            }
+        });
+
+        this.ui.btnCloseModal.addEventListener('click', () => {
+            this.ui.helpModal.close();
         });
     },
 
