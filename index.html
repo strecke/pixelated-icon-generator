@@ -12,104 +12,113 @@
 </head>
 
 <body>
-    <div class="header">
+    <header class="header">
         <h1>Pixelated Icon Generator</h1>
         <p>Create your pixelated SVG for free.</p>
-    </div>
-    <div class="main-wrapper">
+    </header>
+    <main class="main-wrapper">
         <div class="main-content">
             <div class="scroll-wrapper">
-                <button class="scroll-btn left" title="Scroll Left"><span class="icon icon-left"></span></button>
+                <button class="scroll-btn left" title="Scroll Left" aria-label="Scroll Left"><span
+                        class="icon icon-left"></span></button>
                 <div class="toolbar">
-                    <button class="picker edit-group" data-tool="picker" title="Eyedropper (p)">
+                    <button class="picker edit-group" data-tool="picker" title="Eyedropper (p)"
+                        aria-label="Eyedropper (p)">
                         <span class="icon icon-picker"></span>
                     </button>
-                    <div class="color-picker-wrapper" title="Pick Color">
+                    <div class="color-picker-wrapper" title="Pick Color" aria-label="Pick Color">
                         <input type="color">
                     </div>
-                    <div class="color-history" title="Color History"></div>
+                    <div class="color-history" title="Color History" aria-label="Color History"></div>
                     <div class="divider"></div>
 
-                    <button class="draw edit-group active" data-tool="draw" title="Draw (d)">
+                    <button class="draw edit-group active" data-tool="draw" title="Draw (d)" aria-label="Draw (d)">
                         <span class="icon icon-pen"></span>
                     </button>
 
-                    <button class="rainbow edit-group" data-tool="rainbow" title="Rainbow (r)">
+                    <button class="rainbow edit-group" data-tool="rainbow" title="Rainbow (r)" aria-label="Rainbow (r)">
                         <span class="icon icon-rainbow"></span>
                     </button>
-                    <button class="erase edit-group" data-tool="erase" title="Erase (e)">
+                    <button class="erase edit-group" data-tool="erase" title="Erase (e)" aria-label="Erase (e)">
                         <span class="icon icon-eraser"></span>
                     </button>
-                    <button class="fill edit-group" data-tool="fill" title="Fill (f)">
+                    <button class="fill edit-group" data-tool="fill" title="Fill (f)" aria-label="Fill (f)">
                         <span class="icon icon-fill"></span>
                     </button>
                     <div class="divider"></div>
 
-                    <button class="brighten edit-group" data-tool="brighten" title="Brighten">
+                    <button class="brighten edit-group" data-tool="brighten" title="Brighten" aria-label="Brighten">
                         <span class="icon icon-brighten"></span>
                     </button>
-                    <button class="darken edit-group" data-tool="darken" title="Darken">
+                    <button class="darken edit-group" data-tool="darken" title="Darken" aria-label="Darken">
                         <span class="icon icon-darken"></span>
                     </button>
                     <div class="divider"></div>
-                    <button class="draw-x" title="Mirror vertically (x)">
+                    <button class="draw-x" title="Mirror vertically (x)" aria-label="Mirror vertically (x)">
                         <span class="icon icon-draw-x"></span>
                     </button>
-                    <button class="draw-y" title="Mirror horizontally (y)">
+                    <button class="draw-y" title="Mirror horizontally (y)" aria-label="Mirror horizontally (y)">
                         <span class="icon icon-draw-y"></span>
                     </button>
                     <div class="divider"></div>
-                    <button class="move edit-group" data-tool="move" title="Move (m)">
+                    <button class="move edit-group" data-tool="move" title="Move (m)" aria-label="Move (m)">
                         <span class="icon icon-move"></span>
                     </button>
-                    <button class="bg-fill" title="Fill Background (b)">
+                    <button class="bg-fill" title="Fill Background (b)" aria-label="Fill Background (b)">
                         <span class="icon icon-bg-fill"></span>
                     </button>
 
-                    <button class="rotate" title="Rotate (o)">
+                    <button class="rotate" title="Rotate (o)" aria-label="Rotate (o)">
                         <span class="icon icon-rotate"></span>
                     </button>
-                    <button class="mirror" title="Mirror (i)">
+                    <button class="mirror" title="Mirror (i)" aria-label="Mirror (i)">
                         <span class="icon icon-mirror"></span>
                     </button>
                 </div>
-                <button class="scroll-btn right" title="Scroll Right"><span class="icon icon-right"></span></button>
+                <button class="scroll-btn right" title="Scroll Right" aria-label="Scroll Right"><span
+                        class="icon icon-right"></span></button>
             </div>
 
             <div class="workspace">
                 <div class="scroll-wrapper">
-                    <button class="scroll-btn left" title="Scroll Left"><span class="icon icon-left"></span></button>
+                    <button class="scroll-btn left" title="Scroll Left" aria-label="Scroll Left"><span
+                            class="icon icon-left"></span></button>
                     <div class="actionbar">
                         <div class="action-group">
-                            <button class="undo" title="Undo (ctrl + z)"><span class="icon icon-undo"></span></button>
-                            <button class="redo" title="Redo (ctrl + y), (ctrl + Shift + z)"><span
+                            <button class="undo" title="Undo (ctrl + z)" aria-label="Undo (ctrl + z)"><span
+                                    class="icon icon-undo"></span></button>
+                            <button class="redo" title="Redo (ctrl + y), (ctrl + Shift + z)"
+                                aria-label="Redo (ctrl + y), (ctrl + Shift + z)"><span
                                     class="icon icon-redo"></span></button>
                         </div>
                         <div class="divider vertical"></div>
                         <div class="action-group">
-                            <button class="grid active" title="Toggle Grid (g)"><span
+                            <button class="grid active" title="Toggle Grid (g)" aria-label="Toggle Grid (g)"><span
                                     class="icon icon-grid"></span></button>
-                            <button class="clear" title="Clear Canvas (c)"><span
+                            <button class="clear" title="Clear Canvas (c)" aria-label="Clear Canvas (c)"><span
                                     class="icon icon-delete"></span></button>
                         </div>
                         <div class="divider vertical"></div>
                         <div class="action-group">
-                            <button class="save" title="Save (ctrl + s)"><span class="icon icon-save"></span></button>
-                            <button class="gallery" title="Gallery (ctrl + g)"><span
+                            <button class="save" title="Save (ctrl + s)" aria-label="Save (ctrl + s)"><span
+                                    class="icon icon-save"></span></button>
+                            <button class="gallery" title="Gallery (ctrl + g)" aria-label="Gallery (ctrl + g)"><span
                                     class="icon icon-gallery"></span></button>
-                            <button class="download" title="Download SVG (ctrl + d)"><span
-                                    class="icon icon-download"></span></button>
-                            <button class="generate-svg" title="Generate SVG Code (ctrl + c)"><span
-                                    class="icon icon-svg"></span></button>
-                            <button class="upload" title="Upload SVG (ctrl + u)"><span
-                                    class="icon icon-upload"></span></button>
+                            <button class="download" title="Download SVG (ctrl + d)"
+                                aria-label="Download SVG (ctrl + d)"><span class="icon icon-download"></span></button>
+                            <button class="generate-svg" title="Generate SVG Code (ctrl + c)"
+                                aria-label="Generate SVG Code (ctrl + c)"><span class="icon icon-svg"></span></button>
+                            <button class="upload" title="Upload SVG (ctrl + u)"
+                                aria-label="Upload SVG (ctrl + u)"><span class="icon icon-upload"></span></button>
                         </div>
                         <div class="action-group push-right">
-                            <button class="welcome" title="Help/Welcome (h)" command="show-modal"
-                                commandfor="help-modal"><span class="icon icon-welcome"></span></button>
+                            <button class="welcome" title="Help/Welcome (h)" aria-label="Help/Welcome (h)"
+                                command="show-modal" commandfor="help-modal"><span
+                                    class="icon icon-welcome"></span></button>
                         </div>
                     </div>
-                    <button class="scroll-btn right" title="Scroll Right"><span class="icon icon-right"></span></button>
+                    <button class="scroll-btn right" title="Scroll Right" aria-label="Scroll Right"><span
+                            class="icon icon-right"></span></button>
                 </div>
 
                 <div class="grid-container grid-active"></div>
@@ -118,16 +127,18 @@
         </div>
 
         <div class="grid-size-container">
-            <button class="hint-show" title="Show tips (t)"><span class="icon icon-small icon-hint"></span></button>
-            <button class="grid-size-minus" title="Scale Down Grid (-)">–</button>
+            <button class="hint-show" title="Show tips (t)" aria-label="Show tips (t)"><span
+                    class="icon icon-small icon-hint"></span></button>
+            <button class="grid-size-minus" title="Scale Down Grid (-)" aria-label="Scale Down Grid (-)">–</button>
             <span class="grid-size">16 x 16</span>
-            <button class="grid-size-plus" title="Scale Up Grid (+)">+</button>
-            <button class="grid-size-scale" title="Scale Canvas (s)"><span
+            <button class="grid-size-plus" title="Scale Up Grid (+)" aria-label="Scale Up Grid (+)">+</button>
+            <button class="grid-size-scale" title="Scale Canvas (s)" aria-label="Scale Canvas (s)"><span
                     class="icon icon-small icon-scale"></span></button>
         </div>
-    </div>
+    </main>
     <div class="hint-container">
-        <button class="hint-close" title="Dismiss tips (t)"><span class="icon icon-small icon-close"></span></button>
+        <button class="hint-close" title="Dismiss tips (t)" aria-label="Dismiss tips (t)"><span
+                class="icon icon-small icon-close"></span></button>
         <span class="hint-text"></span>
     </div>
 
@@ -135,7 +146,8 @@
         <fieldset class="svg-code-wrapper close">
             <legend>SVG Output</legend>
             <code class="svg-output"></code>
-            <button class="copy-svg"><span class="icon icon-copy"></span></button>
+            <button class="copy-svg" title="Copy SVG" aria-label="Copy SVG"><span
+                    class="icon icon-copy"></span></button>
         </fieldset>
         <div class="svg-links-container">
             <span class="links-wrapper">
@@ -146,17 +158,18 @@
             <p>(Not affiliated, but open source)</p>
         </div>
     </div>
-    <div class="footer">
+    <footer class="footer">
         <p class="tribute">Icons by <a href="https://phosphoricons.com/" target="_blank"
                 rel="noopener noreferrer">Phosphor</a></p>
         <span><a href="https://github.com/strecke/pixelated-icon-generator" target="_blank"
                 rel="noopener noreferrer"><span class="icon icon-github"></span>Contribute on GitHub</a></span>
-    </div>
+    </footer>
 
     <dialog id="help-modal" class="help-modal">
         <div class="modal-header">
             <h2>Welcome to the Pixelated Icon Generator!</h2>
-            <button class="close-modal" title="Close" command="close" commandfor="help-modal">&times;</button>
+            <button class="close-modal" title="Close" aria-label="Close" command="close"
+                commandfor="help-modal">&times;</button>
         </div>
         <div class="modal-body">
             <p>Your Pixel-Art & Icon Generator.
@@ -167,7 +180,7 @@
                 <div class="shortcut-item"><kbd>R</kbd><span class="icon icon-rainbow"></span><span
                         class="item-text">Rainbow</span></div>
                 <div class="shortcut-item"><kbd>E</kbd>(<span class="icon icon-mouse-right icon-small"
-                        title="Left Click"></span>)<span class="icon icon-eraser"></span><span
+                        title="Left Click" aria-label="Left Click"></span>)<span class="icon icon-eraser"></span><span
                         class="item-text">Eraser</span></div>
                 <div class="shortcut-item"><kbd>F</kbd><span class="icon icon-fill"></span><span class="item-text">Fill
                         Bucket</span></div>
@@ -176,7 +189,8 @@
                 <div class="shortcut-item"><kbd>L</kbd><span class="icon icon-darken"></span><span
                         class="item-text">Darken</span></div>
                 <div class="shortcut-item"><kbd>M</kbd>(<span class="icon icon-mouse-middle icon-small"
-                        title="Middle Click"></span>)<span class="icon icon-move"></span><span class="item-text">Move
+                        title="Middle Click" aria-label="Middle Click"></span>)<span class="icon icon-move"></span><span
+                        class="item-text">Move
                         Canvas</span></div>
                 <div class="shortcut-item"><kbd>P</kbd><span class="icon icon-picker"></span><span
                         class="item-text">Color Picker</span></div>
