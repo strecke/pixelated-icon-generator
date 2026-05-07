@@ -997,23 +997,33 @@ const drawManager = {
             return;
         }
 
-        const coords = this.getGridCoordinates(e);
-        if (this.lastX === coords.x && this.lastY === coords.y) return;
-
         const activeTool = toolbarManager.getActiveTool();
 
-        if (activeTool === 'move') {
-            const dx = coords.x - this.dragStartX;
-            const dy = coords.y - this.dragStartY;
-            this.move(dx, dy);
-        } else if (activeTool === 'fill') {
-            this.fill(coords.x, coords.y);
-        } else {
-            this.drawLine(this.lastX, this.lastY, coords.x, coords.y);
-        }
+        if (activeTool === 'move' || activeTool === 'fill') {
+            const coords = this.getGridCoordinates(e);
+            if (this.lastX === coords.x && this.lastY === coords.y) return;
 
-        this.lastX = coords.x;
-        this.lastY = coords.y;
+            if (activeTool === 'move') {
+                const dx = coords.x - this.dragStartX;
+                const dy = coords.y - this.dragStartY;
+                this.move(dx, dy);
+            } else {
+                this.fill(coords.x, coords.y);
+            }
+            this.lastX = coords.x;
+            this.lastY = coords.y;
+        } else {
+            const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+
+            for (let i = 0; i < events.length; i++) {
+                const coords = this.getGridCoordinates(events[i]);
+                if (this.lastX === coords.x && this.lastY === coords.y) return;
+
+                this.drawLine(this.lastX, this.lastY, coords.x, coords.y);
+                this.lastX = coords.x;
+                this.lastY = coords.y;
+            }
+        }
     },
 
     handleGridSizeChange: function () {

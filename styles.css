@@ -363,6 +363,7 @@ input[type="color"]::-moz-color-swatch {
     -webkit-user-select: none;
     user-select: none;
     contain: strict;
+    pointer-events: auto;
 }
 
 .grid-container .grid-row {
