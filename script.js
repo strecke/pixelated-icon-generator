@@ -768,7 +768,7 @@ const svgManager = {
             ctx.drawImage(img, 0, 0, size, size);
             const imageData = ctx.getImageData(0, 0, size, size).data;
 
-            const newColorData = Array.from({ length: size }, () => new Array(size).fill(''));
+            const newColorData = drawManager.createEmptyGrid(size);
             let dataIndex = 0;
             for (let y = 0; y < size; y++) {
                 for (let x = 0; x < size; x++) {
@@ -921,9 +921,7 @@ const drawManager = {
     },
 
     initColorData: function () {
-        this.colorData = Array.from({ length: gridSizeManager.getGridSize() }, () =>
-            Array.from({ length: gridSizeManager.getGridSize() }, () => '')
-        );
+        this.colorData = this.createEmptyGrid();
     },
 
     buildDOMCache: function () {
@@ -1121,6 +1119,10 @@ const drawManager = {
         }
     },
 
+    createEmptyGrid: function (size = gridSizeManager.getGridSize()) {
+        return Array.from({ length: size }, () => new Array(size).fill(''));
+    },
+
     applyTool: function (x, y, toolName) {
         if (toolName === 'picker') {
             this.picker(x, y);
@@ -1210,7 +1212,7 @@ const drawManager = {
 
     move: function (dx, dy) {
         const size = gridSizeManager.getGridSize();
-        const newColorData = Array.from({ length: size }, () => new Array(size).fill(''));
+        const newColorData = this.createEmptyGrid();
 
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
@@ -1277,7 +1279,7 @@ const drawManager = {
 
     rotate: function () {
         const size = gridSizeManager.getGridSize();
-        const newColorData = Array.from({ length: size }, () => new Array(size).fill(''));
+        const newColorData = this.createEmptyGrid();
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
                 newColorData[x][size - 1 - y] = this.colorData[y][x];
