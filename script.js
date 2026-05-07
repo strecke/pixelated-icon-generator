@@ -288,6 +288,7 @@ const toolbarManager = {
         this.ui.btnGenerate = this.ui.actionbar.querySelector('button.generate-svg');
         this.ui.btnUpload = this.ui.actionbar.querySelector('button.upload');
         this.ui.helpModal = document.getElementById('help-modal');
+        this.ui.btnWelcome = this.ui.actionbar.querySelector('button.welcome');
     },
 
     getActiveTool: function () {
