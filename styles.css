@@ -375,31 +375,29 @@ input[type="color"]::-moz-color-swatch {
     background: none;
     flex: 1 0;
     pointer-events: none;
+    box-sizing: border-box;
+    transform: scale(1.02);
+}
+
+@-moz-document url-prefix(){
+    .grid-container .grid-cell {
+        transform: none;
+    }
 }
 
 /* grid-active */
 .grid-container.grid-active .grid-cell {
-    box-shadow:
-        inset var(--grid-line-weight) var(--grid-line-weight) var(--grid-lines);
+    transform: none;
+    border-top: var(--grid-line-weight) solid var(--grid-lines);
+    border-left: var(--grid-line-weight) solid var(--grid-lines);
 }
 
 .grid-container.grid-active .grid-cell:last-child {
-    box-shadow:
-        inset var(--grid-line-weight) var(--grid-line-weight) var(--grid-lines),
-        inset var(--grid-line-weight-negative) var(--grid-line-weight) var(--grid-lines);
+    border-right: var(--grid-line-weight) solid var(--grid-lines);
 }
 
 .grid-container.grid-active .grid-row:last-child .grid-cell {
-    box-shadow:
-        inset var(--grid-line-weight) var(--grid-line-weight) var(--grid-lines),
-        inset var(--grid-line-weight) var(--grid-line-weight-negative) var(--grid-lines);
-}
-
-.grid-container.grid-active .grid-row:last-child .grid-cell:last-child {
-    box-shadow:
-        inset var(--grid-line-weight) var(--grid-line-weight) var(--grid-lines),
-        inset var(--grid-line-weight) var(--grid-line-weight-negative) var(--grid-lines),
-        inset var(--grid-line-weight-negative) var(--grid-line-weight) var(--grid-lines);
+    border-bottom: var(--grid-line-weight) solid var(--grid-lines);
 }
 
 /* grid-mirror-lines */
