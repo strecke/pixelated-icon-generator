@@ -1210,7 +1210,7 @@ const drawManager = {
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
                 const color = this.dragSnapshot[y][x];
-                if (color !== '') {
+                if (color) {
                     const newX = ((x + dx) % size + size) % size;
                     const newY = ((y + dy) % size + size) % size;
                     newColorData[newY][newX] = color;
