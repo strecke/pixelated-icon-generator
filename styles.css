@@ -895,16 +895,16 @@ button:focus-visible {
     border: 1.5px solid black;
 }
 
-.color-history:focus-within,
-.color-picker-wrapper:focus-within {
+.color-history:has(:focus-visible),
+.color-picker-wrapper:has(:focus-visible) {
     box-shadow: 0.5px 0.5px 2px 0.5px red;
     border: 1.5px solid black;
     outline: 2px solid var(--primary-btn);
     outline-offset: 2px;
 }
 
-.color-history:focus-within::after,
-.color-picker-wrapper:focus-within::after {
+.color-history:has(:focus-visible)::after,
+.color-picker-wrapper:has(:focus-visible)::after {
     box-shadow:
         inset -3px -3px red,
         inset 1px 0px 3px red,
