@@ -24,7 +24,6 @@
 /* * {
     outline: 1px solid red;
 } */
-
 body {
     padding: 0 10px;
     margin: auto;
@@ -884,6 +883,43 @@ input[type="color"]::-moz-color-swatch {
 .icon.icon-hint::after {
     left: 45%;
     transform: translate(25%, 76%) rotateZ(45deg);
+}
+
+/* accessibility */
+:focus-visible {
+    outline: 2px solid var(--primary-btn);
+    outline-offset: 2px;
+}
+
+button:focus-visible {
+    border: 1.5px solid black;
+}
+
+.color-history:focus-within,
+.color-picker-wrapper:focus-within {
+    box-shadow: 0.5px 0.5px 2px 0.5px red;
+    border: 1.5px solid black;
+    outline: 2px solid var(--primary-btn);
+    outline-offset: 2px;
+}
+
+.color-history:focus-within::after,
+.color-picker-wrapper:focus-within::after {
+    box-shadow:
+        inset -3px -3px red,
+        inset 1px 0px 3px red,
+        0.5px 0.5px 2px 0.5px transparent;
+}
+
+.main-wrapper button:focus-visible,
+.svg-container button:focus-visible {
+    background: #ff9595;
+    box-shadow: var(--shadow-hover);
+}
+
+.color-history .swatch:focus-visible {
+    outline: none;
+    flex: 2.5;
 }
 
 /* scrollbar */

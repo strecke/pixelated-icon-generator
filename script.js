@@ -78,7 +78,7 @@ const utils = {
         const newHex = this.rgbToHex(rgb.r, rgb.g, rgb.b);
         return this.compressColor(newHex);
     },
-    
+
     showSuccess: function (iconElement, duration = CONFIG.showSuccessDuration) {
         if (this._timers.has(iconElement)) clearTimeout(this._timers.get(iconElement));
         iconElement.classList.add('icon-success');
@@ -517,10 +517,23 @@ const toolbarManager = {
             swatch.style.backgroundColor = color;
             swatch.title = color;
 
-            swatch.addEventListener('click', () => {
+            swatch.setAttribute('tabindex', '0');
+            swatch.setAttribute('role', 'button');
+            swatch.setAttribute('aria-label', `Select color ${color}`);
+
+            const selectColor = () => {
                 this.onColorChange(color);
                 if (this.getActiveTool() !== 'fill') this.setActiveTool('draw');
+            };
+
+            swatch.addEventListener('click', selectColor);
+            swatch.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectColor();
+                }
             });
+
             this.ui.colorHistoryContainer.appendChild(swatch);
         });
     },
