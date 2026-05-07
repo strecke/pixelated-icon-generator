@@ -939,6 +939,106 @@ const drawManager = {
         return this.colorData;
     },
 
+    bindEvents: function () {
+        this.ui.gridContainer.addEventListener('contextmenu', e => e.preventDefault());
+        this.ui.gridContainer.addEventListener('pointerdown', e => this.handlePointerDown(e));
+        this.ui.gridContainer.addEventListener('pointermove', e => this.handlePointerMove(e));
+        document.addEventListener('pointerup', e => this.stopDrawing());
+        document.addEventListener('pointercancel', e => this.stopDrawing());
+
+        document.addEventListener(EVENTS.gridSizeChanged, () => this.handleGridSizeChange());
+        document.addEventListener(EVENTS.canvasRebuilt, () => this.buildDOMCache());
+        document.addEventListener(EVENTS.clearCanvas, () => this.clearCanvas());
+        document.addEventListener(EVENTS.toggleGridLines, () => this.ui.gridContainer.classList.toggle('grid-active'));
+        document.addEventListener(EVENTS.loadState, e => this.loadFromData(e.detail));
+        document.addEventListener(EVENTS.restoreHistoryState, e => this.loadFromData(e.detail));
+        document.addEventListener(EVENTS.rotateCanvas, () => this.rotate());
+        document.addEventListener(EVENTS.mirrorCanvas, () => this.mirror());
+        document.addEventListener(EVENTS.toggleMirrorY, e => this.ui.gridContainer.classList.toggle('mirror-y', e.detail));
+        document.addEventListener(EVENTS.toggleMirrorX, e => this.ui.gridContainer.classList.toggle('mirror-x', e.detail));
+        document.addEventListener(EVENTS.fillBackground, () => this.fillBackground());
+        setTimeout(() => this.buildDOMCache(), 0);
+    },
+
+    handlePointerDown: function (e) {
+        e.preventDefault();
+        if (this.active) return;
+
+        this.gridRect = this.ui.gridContainer.getBoundingClientRect();
+        this.ui.gridContainer.setPointerCapture(e.pointerId);
+
+        if (e.button === 1 || e.button === 2) {
+            if (!this.lastTool) this.lastTool = toolbarManager.getActiveTool();
+            const newTool = e.button === 1 ? 'move' : this.lastTool === 'erase' ? 'draw' : 'erase';
+            toolbarManager.setActiveTool(newTool);
+        }
+
+        this.active = true;
+        this.hasChanged = false;
+
+        const coords = this.getGridCoordinates(e);
+        this.lastX = coords.x;
+        this.lastY = coords.y;
+
+        const activeTool = toolbarManager.getActiveTool();
+
+        if (activeTool === 'move') {
+            this.dragSnapshot = this.colorData.map(row => [...row]);
+            this.dragStartX = this.lastX;
+            this.dragStartY = this.lastY;
+        } else {
+            this.applyTool(this.lastX, this.lastY, activeTool);
+        }
+    },
+
+    handlePointerMove: function (e) {
+        if (!this.active) return;
+        if (e.buttons === 0) {
+            this.stopDrawing();
+            return;
+        }
+
+        const coords = this.getGridCoordinates(e);
+        if (this.lastX === coords.x && this.lastY === coords.y) return;
+
+        const activeTool = toolbarManager.getActiveTool();
+
+        if (activeTool === 'move') {
+            const dx = coords.x - this.dragStartX;
+            const dy = coords.y - this.dragStartY;
+            this.move(dx, dy);
+        } else if (activeTool === 'fill') {
+            this.fill(coords.x, coords.y);
+        } else {
+            this.drawLine(this.lastX, this.lastY, coords.x, coords.y);
+        }
+
+        this.lastX = coords.x;
+        this.lastY = coords.y;
+    },
+
+    handleGridSizeChange: function () {
+        const newSize = gridSizeManager.getGridSize();
+        const oldData = this.colorData;
+        const oldSize = oldData.length;
+        const isScale = gridSizeManager.ui.btnScale.classList.contains('active');
+
+        this.colorData = Array.from({ length: newSize }, (_, y) =>
+            Array.from({ length: newSize }, (_, x) => {
+                if (isScale) {
+                    const oldX = Math.floor(x * (oldSize / newSize));
+                    const oldY = Math.floor(y * (oldSize / newSize));
+                    return (oldData[oldY] && oldData[oldY][oldX]) ? oldData[oldY][oldX] : '';
+
+                } else {
+                    return (oldData[y] && oldData[y][x]) ? oldData[y][x] : '';
+                }
+            }));
+
+        this.buildDOMCache();
+        this.renderAllPixels();
+    },
+
     stopDrawing: function () {
         if (!this.active) return;
         if (this.hasChanged) document.dispatchEvent(new CustomEvent(EVENTS.saveHistory));
@@ -966,143 +1066,22 @@ const drawManager = {
 
         let x = Math.floor(((e.clientX - rect.left) / rect.width) * size);
         let y = Math.floor(((e.clientY - rect.top) / rect.height) * size);
+
         x = Math.max(0, Math.min(size - 1, x));
         y = Math.max(0, Math.min(size - 1, y));
         return { x, y };
     },
 
-    bindEvents: function () {
-        this.ui.gridContainer.addEventListener('contextmenu', e => e.preventDefault());
+    updateColorData: function (x, y, color = '') {
+        const compressedColor = utils.compressColor(color);
 
-        this.ui.gridContainer.addEventListener('pointerdown', e => {
-            e.preventDefault();
-            if (this.active) return;
-
-            this.gridRect = this.ui.gridContainer.getBoundingClientRect();
-
-            this.ui.gridContainer.setPointerCapture(e.pointerId);
-            if (e.button === 1) {
-                if (!this.lastTool) this.lastTool = toolbarManager.getActiveTool();
-                toolbarManager.setActiveTool('move');
-            } else if (e.button === 2) {
-                if (!this.lastTool) this.lastTool = toolbarManager.getActiveTool();
-                const newTool = this.lastTool === 'erase' ? 'draw' : 'erase';
-                toolbarManager.setActiveTool(newTool);
-            }
-            this.active = true;
-            this.hasChanged = false;
-
-            const coords = this.getGridCoordinates(e);
-
-            this.lastX = coords.x;
-            this.lastY = coords.y;
-
-            const activeTool = toolbarManager.getActiveTool();
-
-            if (activeTool === 'move') {
-                this.dragSnapshot = this.colorData.map(row => [...row]);
-                this.dragStartX = this.lastX;
-                this.dragStartY = this.lastY;
-            } else {
-                this.applyTool(this.lastX, this.lastY, activeTool);
-            }
-        });
-
-        this.ui.gridContainer.addEventListener('pointermove', e => {
-            if (!this.active) return;
-            if (e.buttons === 0) {
-                this.stopDrawing();
-                return;
-            }
-
-            const coords = this.getGridCoordinates(e);
-            const currentX = coords.x;
-            const currentY = coords.y;
-            if (this.lastX === currentX && this.lastY === currentY) return;
-
-            const activeTool = toolbarManager.getActiveTool();
-
-            if (activeTool === 'move') {
-                const dx = currentX - this.dragStartX;
-                const dy = currentY - this.dragStartY;
-                this.move(dx, dy);
-            } else if (activeTool === 'fill') {
-                this.fill(currentX, currentY);
-            } else {
-                this.drawLine(this.lastX, this.lastY, currentX, currentY);
-            }
-
-            this.lastX = currentX;
-            this.lastY = currentY;
-        });
-
-        document.addEventListener('pointerup', e => this.stopDrawing());
-        document.addEventListener('pointercancel', e => this.stopDrawing());
-
-        document.addEventListener(EVENTS.gridSizeChanged, () => {
-            const newSize = gridSizeManager.getGridSize();
-            const oldData = this.colorData;
-            const oldSize = oldData.length;
-            const isScale = gridSizeManager.ui.btnScale.classList.contains('active');
-
-            this.colorData = Array.from({ length: newSize }, (_, y) =>
-                Array.from({ length: newSize }, (_, x) => {
-                    if (isScale) {
-                        const oldX = Math.floor(x * (oldSize / newSize));
-                        const oldY = Math.floor(y * (oldSize / newSize));
-                        return (oldData[oldY] && oldData[oldY][oldX]) ? oldData[oldY][oldX] : '';
-
-                    } else {
-                        return (oldData[y] && oldData[y][x]) ? oldData[y][x] : '';
-                    }
-                }));
-
-            this.buildDOMCache();
-
-            for (let y = 0; y < newSize; y++) {
-                for (let x = 0; x < newSize; x++) {
-                    const cell = this.domCache[y] && this.domCache[y][x];
-                    if (cell) {
-                        cell.style.backgroundColor = this.colorData[y][x];
-                    }
-                }
-            }
-        });
-
-        document.addEventListener(EVENTS.canvasRebuilt, () => this.buildDOMCache());
-        setTimeout(() => this.buildDOMCache(), 0);
-
-        document.addEventListener(EVENTS.clearCanvas, () => {
-            this.initColorData();
-            this.clearDOMColors();
-        });
-
-        document.addEventListener(EVENTS.toggleGridLines, () => this.ui.gridContainer.classList.toggle('grid-active'));
-        document.addEventListener(EVENTS.loadState, e => this.loadFromData(e.detail));
-        document.addEventListener(EVENTS.restoreHistoryState, e => this.loadFromData(e.detail));
-        document.addEventListener(EVENTS.rotateCanvas, () => this.rotate());
-        document.addEventListener(EVENTS.mirrorCanvas, () => this.mirror());
-        document.addEventListener(EVENTS.toggleMirrorX, e => this.ui.gridContainer.classList.toggle('mirror-x', e.detail));
-        document.addEventListener(EVENTS.toggleMirrorY, e => this.ui.gridContainer.classList.toggle('mirror-y', e.detail));
-        document.addEventListener(EVENTS.fillBackground, () => this.fillBackground());
-    },
-
-    applyTool: function (x, y, toolName) {
-        if (toolName === 'picker') {
-            this.picker(x, y);
-            return;
+        if (this.colorData[y][x] !== compressedColor) {
+            this.colorData[y][x] = compressedColor;
+            this.hasChanged = true;
+            this.needsSvgReset = true;
+            return true;
         }
-
-        const size = gridSizeManager.getGridSize();
-        const mirrorX = size - 1 - x;
-        const mirrorY = size - 1 - y;
-        this[toolName](x, y);
-
-        if (toolbarManager.isMirrorX && mirrorY !== y) this[toolName](x, mirrorY);
-        if (toolbarManager.isMirrorY && mirrorX !== x) this[toolName](mirrorX, y);
-        if (toolbarManager.isMirrorX && toolbarManager.isMirrorY && mirrorX !== x && mirrorY !== y) {
-            this[toolName](mirrorX, mirrorY);
-        }
+        return false;
     },
 
     loadFromData: function (newColorData) {
@@ -1116,20 +1095,22 @@ const drawManager = {
         }
 
         this.colorData = newColorData.map(row => [...row]);
-
-        for (let row = 0; row < newSize; row++) {
-            for (let column = 0; column < newSize; column++) {
-                const color = this.colorData[row][column];
-                const cell = this.domCache[row] && this.domCache[row][column];
-                if (cell) {
-                    cell.style.backgroundColor = color;
-                }
-            }
-        }
+        this.renderAllPixels();
         document.dispatchEvent(new CustomEvent(EVENTS.canvasRebuilt, { detail: this.colorData }));
     },
 
-    clearDOMColors: function () {
+    renderAllPixels: function () {
+        const size = this.colorData.length;
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                const cell = this.domCache[y] && this.domCache[y][x];
+                if (cell) cell.style.backgroundColor = this.colorData[y][x];
+            }
+        }
+    },
+
+    clearCanvas: function () {
+        this.initColorData();
         const size = gridSizeManager.getGridSize();
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
@@ -1137,6 +1118,25 @@ const drawManager = {
                     this.domCache[y][x].style.backgroundColor = '';
                 }
             }
+        }
+    },
+
+    applyTool: function (x, y, toolName) {
+        if (toolName === 'picker') {
+            this.picker(x, y);
+            return;
+        }
+
+        const size = gridSizeManager.getGridSize();
+        const mirrorX = size - 1 - x;
+        const mirrorY = size - 1 - y;
+
+        this[toolName](x, y);
+
+        if (toolbarManager.isMirrorX && mirrorY !== y) this[toolName](x, mirrorY);
+        if (toolbarManager.isMirrorY && mirrorX !== x) this[toolName](mirrorX, y);
+        if (toolbarManager.isMirrorX && toolbarManager.isMirrorY && mirrorX !== x && mirrorY !== y) {
+            this[toolName](mirrorX, mirrorY);
         }
     },
 
@@ -1162,43 +1162,50 @@ const drawManager = {
         }
     },
 
-    draw: function (x, y) {
-        const pickedColor = toolbarManager.getColor();
-        if (this.updateColorData(x, y, pickedColor)) {
+    setPixelColor: function (x, y, color) {
+        if (this.updateColorData(x, y, color)) {
             if (this.domCache[y] && this.domCache[y][x]) {
-                this.domCache[y][x].style.backgroundColor = pickedColor;
+                this.domCache[y][x].style.backgroundColor = color;
             }
         }
     },
 
+    draw: function (x, y) {
+        this.setPixelColor(x, y, toolbarManager.getColor());
+    },
+
+    erase: function (x, y) {
+        this.setPixelColor(x, y, '');
+    },
+
     darken: function (x, y) {
         const currentColor = this.colorData[y][x];
-
         if (!currentColor || currentColor === '#000' || currentColor === '#000000') return;
-
-        const newColor = utils.adjustColor(currentColor, -CONFIG.shadeStep);
-
-        if (this.updateColorData(x, y, newColor)) {
-            if (this.domCache[y] && this.domCache[y][x]) this.domCache[y][x].style.backgroundColor = newColor;
-        }
+        this.setPixelColor(x, y, utils.adjustColor(currentColor, -CONFIG.shadeStep));
     },
 
     brighten: function (x, y) {
         const currentColor = this.colorData[y][x];
-
         if (!currentColor || currentColor === '#fff' || currentColor === '#ffffff') return;
-
-        const newColor = utils.adjustColor(currentColor, CONFIG.shadeStep);
-
-        if (this.updateColorData(x, y, newColor)) {
-            if (this.domCache[y] && this.domCache[y][x]) this.domCache[y][x].style.backgroundColor = newColor;
-        }
+        this.setPixelColor(x, y, utils.adjustColor(currentColor, CONFIG.shadeStep));
     },
 
-    erase: function (x, y) {
-        if (this.updateColorData(x, y, '')) {
-            if (this.domCache[y] && this.domCache[y][x]) this.domCache[y][x].style.backgroundColor = '';
-        }
+    rainbow: function (x, y) {
+        const randomHex = utils.rgbToHex(
+            Math.floor(Math.random() * 256),
+            Math.floor(Math.random() * 256),
+            Math.floor(Math.random() * 256)
+        );
+        toolbarManager.onColorChange(randomHex, true);
+        this.draw(x, y);
+    },
+
+    picker: function (x, y) {
+        let color = this.colorData[y][x];
+        if (color === '') color = '#ffffff';
+        toolbarManager.onColorChange(utils.decompressColor(color));
+        const previousTool = toolbarManager.getPreviousTool();
+        toolbarManager.setActiveTool(previousTool === 'fill' ? 'fill' : 'draw');
     },
 
     move: function (dx, dy) {
@@ -1215,8 +1222,7 @@ const drawManager = {
                 }
             }
         }
-        if (dx % size !== 0 || dy % size !== 0) this.hasChanged = true;
-        else this.hasChanged = false;
+        this.hasChanged = (dx % size !== 0 || dy % size !== 0);
         this.loadFromData(newColorData);
     },
 
@@ -1251,53 +1257,22 @@ const drawManager = {
 
     fillBackground: function () {
         const pickedColor = toolbarManager.getColor();
-        let hasChanged = false;
+        let backgroundChanged = false;
         const size = gridSizeManager.getGridSize();
-
         const newColorData = this.colorData.map(row => [...row]);
 
         for (let y = 0; y < size; y++) {
             for (let x = 0; x < size; x++) {
                 if (newColorData[y][x] === '') {
                     newColorData[y][x] = pickedColor;
-                    hasChanged = true;
+                    backgroundChanged = true;
                 }
             }
         }
-        if (hasChanged) {
+        if (backgroundChanged) {
             this.loadFromData(newColorData);
             document.dispatchEvent(new CustomEvent(EVENTS.saveHistory));
         }
-    },
-
-    rainbow: function (x, y) {
-        const randomR = Math.floor(Math.random() * 256);
-        const randomG = Math.floor(Math.random() * 256);
-        const randomB = Math.floor(Math.random() * 256);
-        toolbarManager.onColorChange(utils.rgbToHex(randomR, randomG, randomB), true);
-        this.draw(x, y);
-    },
-
-    picker: function (x, y) {
-        let color = this.colorData[y][x];
-        if (color === '') color = '#ffffff';
-        const fullHex = utils.decompressColor(color);
-        toolbarManager.onColorChange(fullHex);
-        const previousTool = toolbarManager.getPreviousTool();
-        if (previousTool === 'fill') toolbarManager.setActiveTool('fill');
-        else toolbarManager.setActiveTool('draw');
-    },
-
-    updateColorData: function (x, y, color = '') {
-        const compressedColor = utils.compressColor(color);
-
-        if (this.colorData[y][x] !== compressedColor) {
-            this.colorData[y][x] = compressedColor;
-            this.hasChanged = true;
-            this.needsSvgReset = true;
-            return true;
-        }
-        return false;
     },
 
     rotate: function () {
