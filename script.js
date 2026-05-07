@@ -1109,14 +1109,7 @@ const drawManager = {
 
     clearCanvas: function () {
         this.initColorData();
-        const size = gridSizeManager.getGridSize();
-        for (let y = 0; y < size; y++) {
-            for (let x = 0; x < size; x++) {
-                if (this.domCache[y] && this.domCache[y][x]) {
-                    this.domCache[y][x].style.backgroundColor = '';
-                }
-            }
-        }
+        this.renderAllPixels();
     },
 
     createEmptyGrid: function (size = gridSizeManager.getGridSize()) {
