@@ -46,10 +46,12 @@ const utils = {
         }
         return hex;
     },
+
     decompressColor: function (hex) {
         if (typeof hex !== 'string' || hex === '') return '';
         return hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i, (m, r, g, b) => '#' + r + r + g + g + b + b);
     },
+
     hexToRGB: function (hex) {
         if (typeof hex !== 'string' || hex === '') return { r: 0, g: 0, b: 0 };
         const decompressedHex = this.decompressColor(hex).replace(/^#/, '');
@@ -60,9 +62,11 @@ const utils = {
             b: parseInt(decompressedHex.substring(4, 6), 16),
         };
     },
+
     rgbToHex: function (r, g, b) {
         return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
     },
+
     adjustColor: function (hex, percent = CONFIG.shadeStep) {
         const rgb = this.hexToRGB(hex);
 
@@ -70,18 +74,11 @@ const utils = {
         rgb.r = Math.max(0, Math.min(255, rgb.r + step));
         rgb.g = Math.max(0, Math.min(255, rgb.g + step));
         rgb.b = Math.max(0, Math.min(255, rgb.b + step));
-        // if (percent > 0) {
-        //     rgb.r = Math.round(rgb.r + (255 - rgb.r) * (percent / 100));
-        //     rgb.g = Math.round(rgb.g + (255 - rgb.g) * (percent / 100));
-        //     rgb.b = Math.round(rgb.b + (255 - rgb.b) * (percent / 100));
-        // } else {
-        //     rgb.r = Math.round(rgb.r * (1 + percent / 100));
-        //     rgb.g = Math.round(rgb.g * (1 + percent / 100));
-        //     rgb.b = Math.round(rgb.b * (1 + percent / 100));
-        // }
+
         const newHex = this.rgbToHex(rgb.r, rgb.g, rgb.b);
         return this.compressColor(newHex);
     },
+    
     showSuccess: function (iconElement, duration = CONFIG.showSuccessDuration) {
         if (this._timers.has(iconElement)) clearTimeout(this._timers.get(iconElement));
         iconElement.classList.add('icon-success');
