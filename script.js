@@ -913,6 +913,7 @@ const drawManager = {
     init: function () {
         this.cacheDOM();
         this.initColorData();
+        this.buildDOMCache();
         this.bindEvents();
     },
 
@@ -945,17 +946,17 @@ const drawManager = {
         document.addEventListener('pointercancel', e => this.stopDrawing());
 
         document.addEventListener(EVENTS.gridSizeChanged, () => this.handleGridSizeChange());
-        document.addEventListener(EVENTS.canvasRebuilt, () => this.buildDOMCache());
         document.addEventListener(EVENTS.clearCanvas, () => this.clearCanvas());
         document.addEventListener(EVENTS.toggleGridLines, () => this.ui.gridContainer.classList.toggle('grid-active'));
+
         document.addEventListener(EVENTS.loadState, e => this.loadFromData(e.detail));
         document.addEventListener(EVENTS.restoreHistoryState, e => this.loadFromData(e.detail));
+
         document.addEventListener(EVENTS.rotateCanvas, () => this.rotate());
         document.addEventListener(EVENTS.mirrorCanvas, () => this.mirror());
         document.addEventListener(EVENTS.toggleMirrorY, e => this.ui.gridContainer.classList.toggle('mirror-y', e.detail));
         document.addEventListener(EVENTS.toggleMirrorX, e => this.ui.gridContainer.classList.toggle('mirror-x', e.detail));
         document.addEventListener(EVENTS.fillBackground, () => this.fillBackground());
-        setTimeout(() => this.buildDOMCache(), 0);
     },
 
     handlePointerDown: function (e) {
