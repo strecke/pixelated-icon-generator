@@ -21,18 +21,18 @@
     --shadow-hover: var(--shadow-active), 0.5px 0.5px 2px 0.5px red;
 }
 
-* {
-    font-family: 'Georgia', 'Times', 'Times New Roman', serif;
-    letter-spacing: 1px;
-    color: #000;
-    /* outline: 1px solid red; */
-}
+/* * {
+    outline: 1px solid red;
+} */
 
 body {
     padding: 0 10px;
     margin: auto;
     max-width: 760px;
     background-color: var(--bg);
+    font-family: 'Georgia', 'Times', 'Times New Roman', serif;
+    letter-spacing: 1px;
+    color: #000;
 }
 
 body.drag-active::after {
@@ -48,6 +48,15 @@ body.drag-active::after {
     font-weight: 700;
     z-index: 1000;
     pointer-events: none;
+}
+
+input,
+button,
+select,
+a {
+    font-family: inherit;
+    letter-spacing: inherit;
+    color: inherit;
 }
 
 .close {
@@ -170,8 +179,7 @@ input[type="color"]::-moz-color-swatch {
     appearance: none;
     cursor: pointer;
     box-sizing: border-box;
-    background: none;
-    background-color: var(--bg-btn);
+    background: var(--bg-btn);
     align-items: center;
     justify-content: center;
     overflow: hidden;
@@ -280,7 +288,7 @@ input[type="color"]::-moz-color-swatch {
     background-color: var(--bg-btn);
     border: 1px solid black;
     border-radius: 10px;
-    box-shadow: var(--shadow-default);
+    /* box-shadow: var(--shadow-default); */
     transition: transform 0.1s, box-shadow 0.1s;
     box-shadow: inset -1px -1px 0 2px red;
 }
@@ -345,7 +353,6 @@ input[type="color"]::-moz-color-swatch {
 .grid-container {
     position: relative;
     flex: 1;
-    min-width: 0;
     aspect-ratio: 1 / 1;
     display: flex;
     flex-direction: column;
@@ -379,7 +386,7 @@ input[type="color"]::-moz-color-swatch {
     transform: scale(1.02);
 }
 
-@-moz-document url-prefix(){
+@-moz-document url-prefix() {
     .grid-container .grid-cell {
         transform: none;
     }
