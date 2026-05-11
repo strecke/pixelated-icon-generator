@@ -21,9 +21,6 @@
     --shadow-hover: var(--shadow-active), 0.5px 0.5px 2px 0.5px red;
 }
 
-/* * {
-    outline: 1px solid red;
-} */
 body {
     padding: 0 10px;
     margin: auto;
@@ -169,6 +166,7 @@ input[type="color"]::-moz-color-swatch {
 .color-picker-wrapper,
 .color-history {
     display: flex;
+    position: relative;
     width: 35px;
     height: 35px;
     padding: 0;
@@ -963,10 +961,17 @@ button:focus-visible {
     }
 
     .scroll-wrapper .scroll-btn:hover {
-        box-shadow: none !important;
         opacity: 1;
         background: #ff9595;
         border: 1.5px solid black !important;
+    }
+
+    .scroll-wrapper .scroll-btn.left:hover {
+        box-shadow: -7px 0px 0px 6px var(--bg);
+    }
+
+    .scroll-wrapper .scroll-btn.right:hover {
+        box-shadow: 7px 0px 0px 6px var(--bg);
     }
 }
 
@@ -1001,6 +1006,7 @@ button:focus-visible {
         width: 100%;
         cursor: grab;
         scrollbar-width: none;
+        padding: 4px;
     }
 
     .grabbing * {
@@ -1048,6 +1054,7 @@ button:focus-visible {
         align-items: center;
         border-radius: 10px;
         overflow: hidden;
+        margin: -4px 0;
     }
 
     .scroll-wrapper .scroll-btn {
@@ -1062,7 +1069,6 @@ button:focus-visible {
     }
 
     .scroll-wrapper .scroll-btn:active {
-        box-shadow: none !important;
         opacity: 1;
         background: #ff9595;
         border: 1.5px solid black !important;
@@ -1074,6 +1080,7 @@ button:focus-visible {
         transform: translateY(-50%);
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
+        box-shadow: -7px 0px 0px 6px var(--bg);
     }
 
     .scroll-wrapper .scroll-btn.right {
@@ -1082,5 +1089,6 @@ button:focus-visible {
         transform: translateY(-50%);
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
+        box-shadow: 7px 0px 0px 6px var(--bg);
     }
 }
